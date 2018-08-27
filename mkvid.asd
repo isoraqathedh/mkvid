@@ -6,6 +6,6 @@
   :license  "MIT"
   :version "0.0.1"
   :serial t
-  :depends-on (#:qtools #:flare)
+  :depends-on (#:qtools #:qtcore #:qtgui #:flare)
   :components ((:file "package")
                (:file "mkvid")))
