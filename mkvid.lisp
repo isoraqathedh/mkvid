@@ -10,10 +10,10 @@
    (stage-tl-corner-y :initform 60
                       :initarg :stage-topleft-y
                       :accessor stage-topleft-y)
-   (stage-width :initform 1024
+   (stage-width :initform 1280
                 :initarg :stage-width
                 :accessor stage-width)
-   (stage-height :initform 768
+   (stage-height :initform 720
                  :initarg :stage-height
                  :accessor stage-height)))
 
