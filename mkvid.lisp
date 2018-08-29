@@ -34,8 +34,17 @@ with the offset given as the number of absolute pixels. ")
       (q+:make-qpoint (absolute-stage-coordinates window :x x)
                       (absolute-stage-coordinates window :y y)))))
 
+(defgeneric relative-stage-coordinates* (window dimension offset)
+  (:documentation "Calculate the number of pixels that span some fraction OFFSET
+of the stage.")
+  (:method ((window main-window) (dimension (eql :x)) (offset number))
+    (* offset (stage-width window)))
+  (:method ((window main-window) (dimension (eql :y)) (offset number))
+    (* offset (stage-height window))))
+
 (defgeneric relative-stage-coordinates (window dimension offset)
-  (:documentation "Calculate the coordinates of a particular stage ")
+  (:documentation "Calculate the coordinates that is some fraction OFFSET
+from the top or left side.")
   (:method ((window main-window) (dimension (eql :x)) (offset number))
     (absolute-stage-coordinates window :x (* offset (stage-width window))))
   (:method ((window main-window) (dimension (eql :y)) (offset number))
