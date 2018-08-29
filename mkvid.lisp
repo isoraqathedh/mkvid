@@ -112,13 +112,33 @@ with the provided width and height, then shift it by some amount.")
 ;;   (declare (connected timer (timeout)))
 ;;   (update scene)
 ;;   (q+:repaint viewer))
+(defmacro with-brush-pen-font ((painter brush pen font) &body body)
+  (alexandria:with-gensyms (old-brush old-pen old-font)
+    `(let (,old-brush ,old-pen ,old-font)
+       ;; Let new setup
+       (when ,brush
+         (shiftf ,old-brush (q+ brush ,painter) ,brush))
+       (when ,pen
+         (shiftf ,old-pen (q+ pen ,painter) ,pen))
+       (when ,font
+         (shiftf ,old-font (q+ font ,painter) ,font))
+       ;; Main stuff
+       ,@body
+       ;; Restore old setup
+       (when ,old-brush
+         (setf (q+ brush ,painter) ,old-brush))
+       (when ,old-pen
+         (setf (q+ pen ,painter) ,old-pen))
+       (when ,old-font
+         (setf (q+ font ,painter) ,old-font)))))
 
-(defgeneric text-actor (painter position text
-                        &key font size fg-colour bg-colour)
-  (:method ((painter painter) position text
-            &key font size fg-colour bg-colour)
-    ))
+(defgeneric text-actor (painter position text &key brush pen font include-box)
+  (:method ((painter painter) position text &key brush pen font include-box)
+    (with-brush-pen-font (painter brush pen font)
+      )))
 (defgeneric circle-actor (painter position size &optional font ))
+
+(defgeneric rectangle-actor ())
 
 (define-override (main-window paint-event) (ev)
   (declare (ignore ev))
@@ -126,43 +146,53 @@ with the provided width and height, then shift it by some amount.")
     (let ((main-box (centred-relative-rectangle+offset main-window 1/2 2/5 1/6 0))
           (code-box (relative-rectangle main-window 1/20 37/40 9/10 1/40))
           (line-box (relative-rectangle main-window 1/20 1/20 9/10 1/40)))
-      (q+:fill-rect painter
-                    (relative-rectangle main-window 0 0 1 1)
-                    (q+:make-qbrush *background-colour*))
-      (q+:fill-rect painter
-                    (relative-rectangle main-window 9/30 0 1/40 1)
-                    (q+:make-qbrush (q+:make-qcolor 200 15 15)))
-      (setf (q+ brush painter) (q+:make-qbrush *text-colour*)
-            (q+ pen painter) (q+:make-qpen
-                              (q+:make-qbrush
-                               (q+:make-qcolor 255 255 255))
-                              3))
-      (q+:draw-ellipse
-       painter
-       (absolute-stage-coordinates
-        main-window
-        :point
-        (list (+ 30 (* (stage-width main-window) (+ 9/30 1/80)))
-              (+ 30 (* (stage-height main-window) 1/2))))
-       30
-       30)
-      (setf (q+ pen painter) *text-colour*
-            (q+ brush painter) (q+:make-qbrush *background-colour*)
-            (q+ font painter) (q+:make-qfont "Inziu Iosevka TC" 45))
-      (q+:draw-rect painter main-box)
-      (q+:draw-text painter main-box (logior (q+:qt.align-vcenter)
-                                             (q+:qt.align-left))
-                    "London King's Cross")
-      (setf (q+ font painter) (q+:make-qfont "Inziu Iosevka TC" 20))
-      (q+:draw-rect painter code-box)
-      (q+:draw-text painter code-box (logior (q+:qt.align-vcenter)
-                                             (q+:qt.align-left))
-                    "LKX")
-      (q+:draw-rect painter line-box)
-      (q+:draw-text painter line-box (logior (q+:qt.align-vcenter)
-                                             (q+:qt.align-left))
-                    "East Coast Main Line")
-      (print (q+:pen painter)))))
+      (block background
+        (q+:fill-rect painter
+                      (relative-rectangle main-window 0 0 1 1)
+                      (q+:make-qbrush *background-colour*)))
+
+      (block station-line-band
+        (q+:fill-rect painter
+                      (relative-rectangle main-window 9/30 0 1/40 1)
+                      (q+:make-qbrush (q+:make-qcolor 200 15 15))))
+
+      (block station-mark
+        (setf (q+ brush painter) (q+:make-qbrush *text-colour*)
+              (q+ pen painter) (q+:make-qpen
+                                (q+:make-qbrush
+                                 (q+:make-qcolor 255 255 255))
+                                3))
+        (q+:draw-ellipse
+         painter
+         (absolute-stage-coordinates
+          main-window
+          :point
+          (list (+ 30 (* (stage-width main-window) (+ 9/30 1/80)))
+                (+ 30 (* (stage-height main-window) 1/2))))
+         30
+         30))
+
+      (block station-name-box
+        (setf (q+ pen painter) *text-colour*
+              (q+ brush painter) (q+:make-qbrush *background-colour*)
+              (q+ font painter) (q+:make-qfont "Inziu Iosevka TC" 45))
+        (q+:draw-rect painter main-box)
+        (q+:draw-text painter main-box (logior (q+:qt.align-vcenter)
+                                               (q+:qt.align-left))
+                      "London King's Cross"))
+
+      (block station-code-box
+        (setf (q+ font painter) (q+:make-qfont "Inziu Iosevka TC" 20))
+        (q+:draw-rect painter code-box)
+        (q+:draw-text painter code-box (logior (q+:qt.align-vcenter)
+                                               (q+:qt.align-left))
+                      "LKX"))
+
+      (block station-line-name-box
+        (q+:draw-rect painter line-box)
+        (q+:draw-text painter line-box (logior (q+:qt.align-vcenter)
+                                               (q+:qt.align-left))
+                      "East Coast Main Line")))))
 
 (defun main ()
   (with-main-window (w 'main-window)
