@@ -117,11 +117,14 @@ with the provided width and height, then shift it by some amount.")
     `(let (,old-brush ,old-pen ,old-font)
        ;; Let new setup
        (when ,brush
-         (shiftf ,old-brush (q+ brush ,painter) ,brush))
+         (setf  ,old-brush (q+:brush ,painter)
+                (q+ brush ,painter) ,brush))
        (when ,pen
-         (shiftf ,old-pen (q+ pen ,painter) ,pen))
+         (setf  ,old-pen (q+:pen ,painter)
+                (q+ pen ,painter) ,pen))
        (when ,font
-         (shiftf ,old-font (q+ font ,painter) ,font))
+         (setf  ,old-font (q+:font ,painter)
+                (q+ font ,painter) ,font))
        ;; Main stuff
        ,@body
        ;; Restore old setup
