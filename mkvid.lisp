@@ -173,7 +173,7 @@ with the provided width and height, then shift it by some amount.")
                        (list (+ 30 (* (stage-width main-window) (+ 9/30 1/80)))
                              (+ 30 (* (stage-height main-window) 1/2))))
                       30
-                      :brush background-brush
+                      :brush (q+:make-qbrush *text-colour*)
                       :pen (q+:make-qpen
                             (q+:make-qbrush
                              (q+:make-qcolor 255 255 255))
