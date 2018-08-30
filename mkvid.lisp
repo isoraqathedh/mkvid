@@ -3,20 +3,6 @@
 (in-package #:mkvid)
 (in-readtable :qtools)
 
-(define-widget main-window (QWidget)
-  ((stage-tl-corner-x :initform 60
-                      :initarg :stage-topleft-x
-                      :accessor stage-topleft-x)
-   (stage-tl-corner-y :initform 60
-                      :initarg :stage-topleft-y
-                      :accessor stage-topleft-y)
-   (stage-width :initform 1280
-                :initarg :stage-width
-                :accessor stage-width)
-   (stage-height :initform 720
-                 :initarg :stage-height
-                 :accessor stage-height)))
-
 (defparameter *background-colour* (q+:make-qcolor 0 10 25)
   "The background colour for the stage.")
 (defparameter *text-colour* (q+:make-qcolor 240 240 15)

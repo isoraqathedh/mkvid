@@ -1,12 +1,98 @@
-(in-package #:mkvid)
+;;;; coordinates.lisp
+;;;; Handles stage coordinates.
 
-(defstruct component
-  (magnitude 0)
-  (unit :absolute))
+(in-package #:mkvid)
+(in-readtable :qtools)
+
+;;; Commentary:
+;;; Coordinates have two components, one for the x axis and one for the y axis.
+
+;;; There are two systems in use.
+;;; - one where the bottom and right edge receive the value 1
+;;;   for both x and y axes (the "relative" system)
+;;; - one where 1 unit is 1 pixel in both x and y coordinates
+;;; In both systems the top of the stage is the x-axis,
+;;; and the left the stage is the y-axis.
+;;; One can mix and match these,
+;;; but remember that the "ultimate" representation is the latter.
+
+;;; There are functions available that turn them both into absolute coordinates,
+;;; as well as adjusting them by addition and subtraction.
+
+(define-widget main-window (QWidget)
+  ((stage-tl-corner-x :initform 60
+                      :initarg :stage-topleft-x
+                      :accessor stage-topleft-x)
+   (stage-tl-corner-y :initform 60
+                      :initarg :stage-topleft-y
+                      :accessor stage-topleft-y)
+   (stage-width :initform 1280
+                :initarg :stage-width
+                :accessor stage-width)
+   (stage-height :initform 720
+                 :initarg :stage-height
+                 :accessor stage-height)))
+
+;;; Coordinates
 
 (defstruct coordinates
-  (x :type component)
-  (y :type component))
+  (rel-x 0)
+  (rel-y 0)
+  (abs-x 0)
+  (abs-y 0))
+
+(defun origin ()
+  (make-coordinates))
+
+(defun apply-all-components (function coordinates)
+  "Create a new coordinate object 
+vwhere each component in COORDINATES has been applied to FUNCTION.
+
+FUNCTION must be a function that takes in two items:
+- ACCESSOR, which will take the four functions that extract portions
+  out of each coordinates.
+- COORDINATE(S), which can either be a single coordinate or a list thereof.
+
+It is up to the user to provide the correct form of FUNCTION
+to accept "
+  (make-coordinates :rel-x (funcall function #'coordinates-rel-x coordinates)
+                    :rel-y (funcall function #'coordinates-rel-y coordinates)
+                    :abs-x (funcall function #'coordinates-abs-x coordinates)
+                    :abs-y (funcall function #'coordinates-abs-y coordinates)))
+
+(defun coordinate+ (coordinate &rest coordinates)
+  "Add coordinates together."
+  (let ((all-coordinates (cons coordinate coordinates)))
+    (apply-all-components (lambda (accessor coordinates)
+                            (reduce #'+ coordinates
+                                    :key accessor
+                                    :initial-value 0))
+                          all-coordinates)))
+
+(defun coordinate- (coordinate &rest coordinates)
+  "Subtract COORDINATES from COORDINATE.
+
+When COORDINATES is nil, negate COORDINATE."
+  (if coordinates
+      (let ((all-coordinates (cons
+                              coordinate
+                              (mapcar #'coordinate- coordinates))))
+        (apply #'coordinate+ all-coordinates))
+      (apply-all-components (lambda (accessor coordinate)
+                              (- (funcall accessor coordinate)))
+                            coordinate)))
+
+(defgeneric ->qpointf (window coordinates)
+  (:documentation "Convert coordinates to a qpointf.")
+  (:method ((window main-window) (coordinates coordinates))
+    (q+:make-qpointf (+ (stage-topleft-x window)
+                        (* (stage-width window)
+                           (coordinates-rel-x coordinates))
+                        (coordinates-abs-x coordinates))
+                     (+ (stage-topleft-y window)
+                        (* (stage-width window)
+                           (coordinates-rel-y coordinates))
+                        (coordinates-abs-y coordinates)))))
 
 (defgeneric absolute-stage-coordinates (window dimension offset)
   (:documentation "Calculate the coordinates of a particular point in a stage,
@@ -17,7 +103,7 @@ with the offset given as the number of absolute pixels. ")
     (+ (stage-topleft-y window) offset))
   (:method ((window main-window) (dimension (eql :point)) (offset list))
     (destructuring-bind (x y) offset
-      (q+:make-qpoint (absolute-stage-coordinates window :x x)
+      (q+:make-qpointf (absolute-stage-coordinates window :x x)
                       (absolute-stage-coordinates window :y y)))))
 
 (defgeneric relative-stage-coordinates* (window dimension offset)
