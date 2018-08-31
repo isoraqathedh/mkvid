@@ -60,6 +60,14 @@ to accept "
                     :abs-x (funcall function #'coordinates-abs-x coordinates)
                     :abs-y (funcall function #'coordinates-abs-y coordinates)))
 
+(defun absolute-coordinate-p (coordinate)
+  "Is the relative coordinates zero?"
+  (= 0 (coordinates-rel-x coordinate) (coordinates-rel-y coordinate)))
+
+(defun relative-coordinate-p (coordinate)
+  "Is the absolute coordinates zero?"
+  (= 0 (coordinates-abs-x coordinate) (coordinates-abs-y coordinate)))
+
 (defun coordinate+ (coordinate &rest coordinates)
   "Add coordinates together."
   (let ((all-coordinates (cons coordinate coordinates)))
