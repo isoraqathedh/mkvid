@@ -45,8 +45,8 @@
   (make-coordinates))
 
 (defun apply-all-components (function coordinates)
-  "Create a new coordinate object 
-vwhere each component in COORDINATES has been applied to FUNCTION.
+  "Create a new coordinate object
+where each component in COORDINATES has been applied to FUNCTION.
 
 FUNCTION must be a function that takes in two items:
 - ACCESSOR, which will take the four functions that extract portions
