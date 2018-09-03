@@ -122,13 +122,14 @@ Only the relative portions of the coordinates are affected.
 Absolute parts would be zeroed out."
   (unless (and (relative-coordinate-p centre)
                (relative-coordinate-p coordinate))
-    (warn "Relative proportions not zero. They will be discarded."))
+    (warn "Absolute proportions not zero. They will be discarded."))
   (let ((px (coordinates-rel-x coordinate))
         (py (coordinates-rel-y coordinate))
         (cx (coordinates-rel-x centre))
         (cy (coordinates-rel-y centre)))
     (make-coordinates :rel-x (+ cx (* scalar (- px cx)))
                       :rel-y (+ cy (* scalar (- py cy))))))
+
 (defgeneric ->qpointf (window coordinates)
   (:documentation "Convert coordinates to a qpointf.")
   (:method ((window main-window) (coordinates coordinates))
