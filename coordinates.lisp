@@ -100,6 +100,16 @@ When COORDINATES is nil, negate COORDINATE."
                                    (stage-width window))
                                 (coordinates-abs-y coordinates)))))
 
+(defgeneric ->relative (window coordinates)
+  (:documentation "Convert coordinates to all-relative.")
+  (:method ((window main-window) (coordinates coordinates))
+    (make-coordinates :rel-x (+ (/ (coordinates-abs-x coordinates)
+                                   (stage-width window))
+                                (coordinates-rel-x coordinates))
+                      :rel-y (+ (/ (coordinates-abs-y coordinates)
+                                   (stage-width window))
+                                (coordinates-rel-y coordinates)))))
+
 (defun coordinate*-absolute% (coordinate scalar &optional (centre (origin)))
   "Multiply SCALAR to COORDINATES, with an optional CENTRE.
 
