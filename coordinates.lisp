@@ -100,6 +100,35 @@ When COORDINATES is nil, negate COORDINATE."
                                    (coordinates-rel-y coordinates))
                                 (coordinates-abs-y coordinates)))))
 
+(defun coordinate*-absolute% (coordinate scalar &optional (centre (origin)))
+  "Multiply SCALAR to COORDINATES, with an optional CENTRE.
+
+Only the absolute portions of the coordinates are affected.
+Relative parts would be zeroed out."
+  (unless (and (absolute-coordinate-p centre)
+               (absolute-coordinate-p coordinate))
+    (warn "Relative proportions not zero. They will be discarded."))
+  (let ((px (coordinates-abs-x coordinate))
+        (py (coordinates-abs-y coordinate))
+        (cx (coordinates-abs-x centre))
+        (cy (coordinates-abs-y centre)))
+    (make-coordinates :abs-x (+ cx (* scalar (- px cx)))
+                      :abs-y (+ cy (* scalar (- py cy))))))
+
+(defun coordinate*-relative% (coordinate scalar &optional (centre (origin)))
+  "Multiply SCALAR to COORDINATES, with an optional CENTRE.
+
+Only the relative portions of the coordinates are affected.
+Absolute parts would be zeroed out."
+  (unless (and (relative-coordinate-p centre)
+               (relative-coordinate-p coordinate))
+    (warn "Relative proportions not zero. They will be discarded."))
+  (let ((px (coordinates-rel-x coordinate))
+        (py (coordinates-rel-y coordinate))
+        (cx (coordinates-rel-x centre))
+        (cy (coordinates-rel-y centre)))
+    (make-coordinates :rel-x (+ cx (* scalar (- px cx)))
+                      :rel-y (+ cy (* scalar (- py cy))))))
 (defgeneric ->qpointf (window coordinates)
   (:documentation "Convert coordinates to a qpointf.")
   (:method ((window main-window) (coordinates coordinates))
