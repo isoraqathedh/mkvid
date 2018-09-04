@@ -3,7 +3,7 @@
 (in-package :mkvid)
 (in-readtable :qtools)
 
-(defclass actor ()
+(defclass actor (flare:particle)
   ((name :accessor actor-name
          :initarg :actor-name
          :initform nil))
