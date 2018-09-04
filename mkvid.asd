@@ -9,4 +9,5 @@
   :depends-on (#:qtools #:qtcore #:qtgui #:flare)
   :components ((:file "package")
                (:file "coordinates")
+               (:file "actor")
                (:file "mkvid")))
