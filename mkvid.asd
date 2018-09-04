@@ -8,4 +8,5 @@
   :serial t
   :depends-on (#:qtools #:qtcore #:qtgui #:flare)
   :components ((:file "package")
+               (:file "actor")
                (:file "mkvid")))
