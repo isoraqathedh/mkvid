@@ -149,37 +149,20 @@ Absolute parts would be zeroed out."
                        (+ (stage-topleft-y window)
                           (coordinates-abs-y absoluted))))))
 
-(defgeneric absolute-stage-coordinates (window dimension offset)
-  (:documentation "Calculate the coordinates of a particular point in a stage,
-with the offset given as the number of absolute pixels. ")
-  (:method ((window main-window) (dimension (eql :x)) (offset number))
-    (+ (stage-topleft-x window) offset))
-  (:method ((window main-window) (dimension (eql :y)) (offset number))
-    (+ (stage-topleft-y window) offset))
-  (:method ((window main-window) (dimension (eql :point)) (offset list))
-    (destructuring-bind (x y) offset
-      (q+:make-qpointf (absolute-stage-coordinates window :x x)
-                      (absolute-stage-coordinates window :y y)))))
+(defun rectangle (alignment variant &key top-left bottom-right width height)
+  (ecase alignment
+    (:anchored (centred-rectangle width height))
+    (:free (free-rectangle ))))
 
-(defgeneric relative-stage-coordinates* (window dimension offset)
-  (:documentation "Calculate the number of pixels that span some fraction OFFSET
-of the stage.")
-  (:method ((window main-window) (dimension (eql :x)) (offset number))
-    (* offset (stage-width window)))
-  (:method ((window main-window) (dimension (eql :y)) (offset number))
-    (* offset (stage-height window))))
+(defgeneric centred-rectangle (width height)
+  (:documentation "Create a rectangle centred on the "))
 
-(defgeneric relative-stage-coordinates (window dimension offset)
-  (:documentation "Calculate the coordinates that is some fraction OFFSET
-from the top or left side.")
-  (:method ((window main-window) (dimension (eql :x)) (offset number))
-    (absolute-stage-coordinates window :x (* offset (stage-width window))))
-  (:method ((window main-window) (dimension (eql :y)) (offset number))
-    (absolute-stage-coordinates window :y (* offset (stage-height window))))
-  (:method ((window main-window) (dimension (eql :point)) (offset list))
-    (destructuring-bind (x y) offset
-      (q+:make-qpointf (relative-stage-coordinates window :x x)
-                       (relative-stage-coordinates window :y y)))))
+(defgeneric ->qrect (top-left bottom-right)
+  (:documentation "Create a rectangle with the listed coordinates.")
+  (:method ((top-left qpointf) (bottom-right qpointf))
+    (q+:make-qrectf top-left bottom-right))
+  (:method ((top-left coordinates) (bottom-right coordinates))
+    ))
 
 (defgeneric relative-rectangle (window left top width height)
   (:documentation "Create a rectangle with the listed coordinates.")
