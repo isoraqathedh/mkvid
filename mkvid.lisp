@@ -3,10 +3,83 @@
 (in-package #:mkvid)
 (in-readtable :qtools)
 
+(define-widget main-window (QWidget)
+  ((stage-tl-corner-x :initform 60
+                      :initarg :stage-topleft-x
+                      :accessor stage-topleft-x)
+   (stage-tl-corner-y :initform 60
+                      :initarg :stage-topleft-y
+                      :accessor stage-topleft-y)
+   (stage-width :initform 1280
+                :initarg :stage-width
+                :accessor stage-width)
+   (stage-height :initform 720
+                 :initarg :stage-height
+                 :accessor stage-height)))
+
 (defparameter *background-colour* (q+:make-qcolor 0 10 25)
   "The background colour for the stage.")
 (defparameter *text-colour* (q+:make-qcolor 240 240 15)
   "The foreground colour for the stage.")
+
+(defgeneric absolute-stage-coordinates (window dimension offset)
+  (:documentation "Calculate the coordinates of a particular point in a stage,
+with the offset given as the number of absolute pixels. ")
+  (:method ((window main-window) (dimension (eql :x)) (offset number))
+    (+ (stage-topleft-x window) offset))
+  (:method ((window main-window) (dimension (eql :y)) (offset number))
+    (+ (stage-topleft-y window) offset))
+  (:method ((window main-window) (dimension (eql :point)) (offset list))
+    (destructuring-bind (x y) offset
+      (q+:make-qpoint (absolute-stage-coordinates window :x x)
+                      (absolute-stage-coordinates window :y y)))))
+
+(defgeneric relative-stage-coordinates* (window dimension offset)
+  (:documentation "Calculate the number of pixels that span some fraction OFFSET
+of the stage.")
+  (:method ((window main-window) (dimension (eql :x)) (offset number))
+    (* offset (stage-width window)))
+  (:method ((window main-window) (dimension (eql :y)) (offset number))
+    (* offset (stage-height window))))
+
+(defgeneric relative-stage-coordinates (window dimension offset)
+  (:documentation "Calculate the coordinates that is some fraction OFFSET
+from the top or left side.")
+  (:method ((window main-window) (dimension (eql :x)) (offset number))
+    (absolute-stage-coordinates window :x (* offset (stage-width window))))
+  (:method ((window main-window) (dimension (eql :y)) (offset number))
+    (absolute-stage-coordinates window :y (* offset (stage-height window))))
+  (:method ((window main-window) (dimension (eql :point)) (offset list))
+    (destructuring-bind (x y) offset
+      (q+:make-qpointf (relative-stage-coordinates window :x x)
+                       (relative-stage-coordinates window :y y)))))
+
+(defgeneric relative-rectangle (window left top width height)
+  (:documentation "Create a rectangle with the listed coordinates.")
+  (:method ((window main-window) left top width height)
+    (q+:make-qrectf
+     (relative-stage-coordinates window :x left)
+     (relative-stage-coordinates window :y top)
+     (relative-stage-coordinates window :x width)
+     (relative-stage-coordinates window :y height))))
+
+(defgeneric centred-relative-rectangle (window width height)
+  (:documentation "Create a rectangle centred with the stage
+with the provided width and height.")
+  (:method ((window main-window) width height)
+    (let ((top (/ (- 1 height) 2))
+          (left (/ (- 1 width) 2)))
+      (relative-rectangle window left top width height))))
+
+(defgeneric centred-relative-rectangle+offset (window width height dx dy)
+  (:documentation "Create a rectangle centred with the stage
+with the provided width and height, then shift it by some amount.")
+  (:method ((window main-window) width height dx dy)
+    (let ((box (centred-relative-rectangle window width height)))
+      (q+:translate box
+                    (relative-stage-coordinates* window :x dx)
+                    (relative-stage-coordinates* window :y dy))
+      box)))
 
 ;; (define-subwidget (viewer timer) (q+:make-qtimer viewer)
 ;;   (setf (q+:single-shot timer) nil)
