@@ -112,6 +112,7 @@ with the provided width and height, then shift it by some amount.")
 ;;   (declare (connected timer (timeout)))
 ;;   (update scene)
 ;;   (q+:repaint viewer))
+
 (defmacro with-brush-pen-font ((painter brush pen font) &body body)
   (alexandria:with-gensyms (old-brush old-pen old-font)
     `(let (,old-brush ,old-pen ,old-font)
