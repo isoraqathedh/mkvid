@@ -32,4 +32,14 @@
 (defclass group-actor (actor)
   ())
 
-(defgeneric draw-figure (actor window))
+(defgeneric draw-figure (window actor)
+  (:documentation "Draw the figure onto the stage.")
+  (:method ((window main-window) (actor actor))))
+
+(defmethod flare:call-with-translation ((func function) (painter painter) vec)
+  (q+:save painter)
+  (q+:translate painter
+                (3d-vectors:vx vec)
+                (3d-vectors:vy vec))
+  (funcall func)
+  (q+:restore painter))
