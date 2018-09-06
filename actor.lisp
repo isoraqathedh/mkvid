@@ -1,6 +1,6 @@
 ;;;; actor.lisp
 
-(in-package :mkvid)
+(in-package #:mkvid)
 (in-readtable :qtools)
 
 (defclass actor ()
