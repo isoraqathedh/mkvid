@@ -4,18 +4,29 @@
 (in-readtable :qtools)
 
 (defclass actor ()
-  ((name :accessor actor-name
-         :initarg :actor-name
-         :initform nil))
-  (:documentation "A single object in the wholse "))
-
-(defclass text-actor (actor)
-  ())
-
-(defclass circle-actor (actor)
-  ())
+  ()
+  (:documentation "A single object that can move around in the stage. "))
 
 (defclass rectangle-actor (actor)
+  ((x :accessor actor-width
+      :initarg :actor-width
+      :initform (error "Must specify width."))
+   (y :accessor actor-height
+      :initarg :actor-height
+      :initform (error "Must specify height."))))
+
+(defclass text-actor (rectangle-actor)
+  ((text :accessor text
+         :initarg :text)
+   (x :accessor actor-width
+      :initarg :actor-width
+      :initform nil)
+   (y :accessor actor-height
+      :initarg :actor-height
+      :initform nil))
+  (:documentation "A rectangle with text."))
+
+(defclass ellipse-actor (rectangle-actor)
   ())
 
 (defclass group-actor (actor)
