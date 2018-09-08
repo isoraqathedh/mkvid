@@ -13,7 +13,8 @@
       :initform (error "Must specify width."))
    (y :accessor actor-height
       :initarg :actor-height
-      :initform (error "Must specify height."))))
+      :initform (error "Must specify height.")))
+  (:documentation "A rectangle."))
 
 (defclass text-actor (rectangle-actor)
   ((text :accessor text
