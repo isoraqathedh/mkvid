@@ -19,19 +19,17 @@
 (defclass text-actor (rectangle-actor)
   ((text :accessor text
          :initarg :text)
-   (x :accessor actor-width
-      :initarg :actor-width
-      :initform nil)
-   (y :accessor actor-height
-      :initarg :actor-height
-      :initform nil))
+   (x :initform nil)
+   (y :initform nil))
   (:documentation "A rectangle with text."))
 
 (defclass ellipse-actor (rectangle-actor)
   ())
 
 (defclass group-actor (actor)
-  ())
+  ((contents :accessor contents
+             :initform nil
+             :initarg :contents)))
 
 (defgeneric draw-figure (window actor)
   (:documentation "Draw the figure onto the stage.")
