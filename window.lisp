@@ -26,6 +26,11 @@
 ;;   (setf (q+:single-shot timer) nil)
 ;;   (q+:start timer (round 1000/60)))
 
+;; (define-slot (viewer update) ()
+;;   (declare (connected timer (timeout)))
+;;   (update scene)
+;;   (q+:repaint viewer))
+
 ;; (defclass style-combination ()
 ;;   ((font-face :initarg :font-face
 ;;               :accessor font-face
@@ -46,8 +51,3 @@
 ;;   (:method ((style-combination style-combination))
 ;;     (q+:make-qfont (font-face style-combination)
 ;;                    (font-size style-combination))))
-
-;; (define-slot (viewer update) ()
-;;   (declare (connected timer (timeout)))
-;;   (update scene)
-;;   (q+:repaint viewer))
