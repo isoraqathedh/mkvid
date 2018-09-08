@@ -31,9 +31,10 @@
              :initform nil
              :initarg :contents)))
 
-(defgeneric draw-figure (window actor)
+(defgeneric draw-figure (painter actor)
   (:documentation "Draw the figure onto the stage.")
-  (:method ((window main-window) (actor actor))))
+  (:method ((painter painter) (actor rectangle-actor))
+    ()))
 
 ;; (defmethod flare:call-with-translation ((func function) (painter painter) vec)
 ;;   (q+:save painter)
