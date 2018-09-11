@@ -3,46 +3,63 @@
 (in-package #:mkvid)
 (in-readtable :qtools)
 
-(defgeneric absolute-stage-coordinates (window dimension offset)
-  (:documentation "Calculate the coordinates of a particular point in a stage,
-with the offset given as the number of absolute pixels. ")
-  (:method ((window main-window) (dimension (eql :x)) (offset number))
-    (+ (stage-topleft-x window) offset))
-  (:method ((window main-window) (dimension (eql :y)) (offset number))
-    (+ (stage-topleft-y window) offset))
-  (:method ((window main-window) (dimension (eql :point)) (offset list))
-    (destructuring-bind (x y) offset
-      (q+:make-qpoint (absolute-stage-coordinates window :x x)
-                      (absolute-stage-coordinates window :y y)))))
+(defgeneric relative (window &key rx ry)
+  (:documentation "Convert relative coordinates to an absolute one.
 
-(defgeneric relative-stage-coordinates* (window dimension offset)
-  (:documentation "Calculate the number of pixels that span some fraction OFFSET
-of the stage.")
-  (:method ((window main-window) (dimension (eql :x)) (offset number))
-    (* offset (stage-width window)))
-  (:method ((window main-window) (dimension (eql :y)) (offset number))
-    (* offset (stage-height window))))
+Relative coordinates are those that set 1 to the far edge of the stage
+\(bottom and right\).
+As such 1 unit in the x direction is not necessarily
+the same as 1 unit in the y direction.
 
-(defgeneric relative-stage-coordinates (window dimension offset)
-  (:documentation "Calculate the coordinates that is some fraction OFFSET
-from the top or left side.")
-  (:method ((window main-window) (dimension (eql :x)) (offset number))
-    (absolute-stage-coordinates window :x (* offset (stage-width window))))
-  (:method ((window main-window) (dimension (eql :y)) (offset number))
-    (absolute-stage-coordinates window :y (* offset (stage-height window))))
-  (:method ((window main-window) (dimension (eql :point)) (offset list))
-    (destructuring-bind (x y) offset
-      (q+:make-qpointf (relative-stage-coordinates window :x x)
-                       (relative-stage-coordinates window :y y)))))
+This function can only convert one direction at any one time.
+An error will be signalled if both RX and RY are nonzero.")
+  (:method ((window main-window) &key (rx 0) (ry 0))
+    (cond ((and (/= 0 rx) (/= 0 ry))
+           (error "Cannot convert both rx and ry at once."))
+          ((/= 0 rx)
+           (* (stage-width window) rx))
+          ((/= 0 ry)
+           (* (stage-height window) ry))
+          (t
+           0))))
+
+(defgeneric coordinates (window &key x y rx ry output suppress-stage)
+  (:documentation "Create a point.
+
+The point is defined by a combination of relative and absolute coordinates.
+Relative coordinates set 1 to be the far edge of the stage (bottom and right),
+whereas absolute coordinates set 1 to 1 pixel in size.
+The argument OUTPUT indicates what output value is desired:
+use the keyword :X to output the X coordinate,
+the keyword :Y to output the Y coordinate,
+or use a function to call that function with those two coordinates.
+SUPPRESS-STAGE cancels the offset created by the stage.")
+  (:method ((window main-window)
+            &key (x 0) (y 0) (rx 0) (ry 0)
+                 (output #'cons)
+                 suppress-stage)
+    (let ((final-x (+ (if suppress-stage
+                          0
+                          (stage-topleft-x window))
+                      x
+                      (relative window :rx rx)))
+          (final-y (+ (if suppress-stage
+                          0
+                          (stage-topleft-y window))
+                      y
+                      (relative window :ry ry))))
+     (etypecase output
+       ((eql :x) final-x)
+       ((eql :y) final-y)
+       (function (funcall output final-x final-y))))))
 
 (defgeneric relative-rectangle (window left top width height)
   (:documentation "Create a rectangle with the listed coordinates.")
   (:method ((window main-window) left top width height)
     (q+:make-qrectf
-     (relative-stage-coordinates window :x left)
-     (relative-stage-coordinates window :y top)
-     (relative-stage-coordinates window :x width)
-     (relative-stage-coordinates window :y height))))
+     (coordinates window :rx left :ry top :output #'q+:make-qpointf)
+     (coordinates window :rx width :ry height :output #'q+:make-qsizef
+                         :suppress-stage t))))
 
 (defgeneric centred-relative-rectangle (window width height)
   (:documentation "Create a rectangle centred with the stage
