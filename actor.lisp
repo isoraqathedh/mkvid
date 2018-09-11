@@ -40,7 +40,9 @@
 (defgeneric draw-figure (painter actor)
   (:documentation "Draw the figure onto the stage.")
   (:method ((painter painter) (actor rectangle-actor))
-    ()))
+    (rectangle-actor painter
+                     (rectangle (actor-width actor)
+                                (actor-height actor)))))
 
 ;; (defmethod flare:call-with-translation ((func function) (painter painter) vec)
 ;;   (q+:save painter)
