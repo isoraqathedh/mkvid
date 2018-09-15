@@ -69,15 +69,102 @@ with the provided width and height.")
           (left (/ (- 1 width) 2)))
       (relative-rectangle window left top width height))))
 
-(defgeneric centred-relative-rectangle+offset (window width height dx dy)
-  (:documentation "Create a rectangle centred with the stage
-with the provided width and height, then shift it by some amount.")
-  (:method ((window main-window) width height dx dy)
-    (let ((box (centred-relative-rectangle window width height)))
-      (q+:translate box
-                    (relative-stage-coordinates* window :x dx)
-                    (relative-stage-coordinates* window :y dy))
-      box)))
+(defgeneric offset-box (rectangle coordinates-as-cons)
+  (:method (rectangle (coordinates cons))
+    (q+:translate rectangle (car coordinates) (cdr coordinates))
+    rectangle))
+
+(defun rectangle (window type
+                  &key (left-a     0 lap)  (top-a      0 tap)
+                       (width-a    0 wap)  (height-a   0 hap)
+                       (bottom-a   0 bap)  (right-a    0 rap)
+                       (left-r     0 lrp)  (top-r      0 trp)
+                       (width-r    0 wrp)  (height-r   0 hrp)
+                       (bottom-r   0 brp)  (right-r    0 rrp)
+                       (anchor-x-a 0 axap) (anchor-y-a 0 ayap)
+                       (anchor-x-r 0 axrp) (anchor-y-r 0 ayrp)
+                       (prop-x-a   0 pxap) (prop-y-a   0 pyap)
+                       (prop-x-r   0 pxrp) (prop-y-r   0 pyrp))
+  "Create a rectangle.
+
+TYPE indicates the type of vertices that are provided:
+
+- :FREE --
+  Here, the user provides a top-left (via top and left)
+  and a either a size (height and width)
+  or a bottom-right corner (via bottom and right).
+- :CENTRED --
+  Here, provide a size (height and width).
+  The rectangle will be centred with the stage.
+- :ANCHORED --
+  Provide a size (height and width), and also an anchor point (anchor)
+  and a proportion (prop).
+  The rectangle would be the size provided,
+  and the point given in anchor would be the given proportion of the way
+  across the rectangle.
+  For instance, this option can specify a (size =) 1/3 by 1/3 rectangle
+  where the centre of the stage (anchor = 1/2, 1/2)
+  is 40% of the way across the x-axis
+  and 60% of the way across the y-axis (prop = 2/5, 3/5).
+
+Any item provided but not required will be ignored."
+  (declare (ignore tap rap lrp trp rrp))
+  (let ((size
+          (apply #'coordinates window
+                 :output #'q+:make-qsizef
+                 :suppress-stage t
+                 (cond ((or wrp hrp wap hap)
+                        (list :x height-a
+                              :y width-a
+                              :rx height-r
+                              :ry width-r))
+                       ((or brp lap bap lap)
+                        (list :x (- right-a left-a)
+                              :y (- bottom-a top-a)
+                              :rx (- right-r left-r)
+                              :ry (- bottom-r top-r)))
+                       (t nil)))))
+    (q+:make-qrectf
+     (case type
+       (:free
+        (coordinates window :x left-a :y top-a
+                            :rx left-r :ry top-r
+                            :output #'q+:make-qpointf))
+       (:centred
+        ;; (assuming relative coordinates)
+        ;; A centred rectangle has the top left corner at:
+        ;; (1/2 - w/2, 1/2 - h/2).
+        (coordinates window
+                     :rx (- 1/2 (* width-r 1/2)) :ry (- 1/2 (* height-r 1/2))
+                     :x (- (* width-a 1/2)) :y (- (* height-a 1/2))
+                     :output #'q+:make-qpointf))
+       (:anchored
+        ;; In general, with an anchor at (a, b)
+        ;; and the required anchor at (p, q)
+        ;; (where p = 0 means the left edge of the rectangle
+        ;; and p = 1 means the right edge of the rectangle)
+        ;; the top-left corner is at (a - wp, b - hq),
+        ;; and the bottom-right corner is at (a + (1-w)p, b + (1-h)q).
+
+        ;; To make things simple, we require the provided values
+        ;; to be all-relative or all-absolute.
+        (cond ((or axap ayap pxap pyap)
+               (coordinates window
+                            :rx (- anchor-x-r prop-x-a)
+                            :ry (- anchor-y-r prop-y-a)
+                            :x  (- anchor-x-a prop-x-a)
+                            :y  (- anchor-y-a prop-y-a)
+                            :output #'q+:make-qpointf))
+              ((or axrp ayrp pxrp pyrp)
+               (coordinates window
+                            :rx (- anchor-x-r (* width-r  prop-x-r))
+                            :ry (- anchor-y-r (* height-r prop-y-r))
+                            :x  (- anchor-x-a (* width-a  prop-x-r))
+                            :y  (- anchor-y-a (* height-a prop-y-r))
+                            :output #'q+:make-qpointf))
+              (t (error "Anchors and sizes must be both ~
+relative or both absolute.")))))
+     size)))
 
 (defmacro with-brush-pen-font ((painter brush pen font) &body body)
   (alexandria:with-gensyms (old-brush old-pen old-font)
