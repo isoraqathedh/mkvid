@@ -3,7 +3,7 @@
 (in-package #:mkvid)
 (in-readtable :qtools)
 
-(defclass actor ()
+(defclass actor (flare:particle)
   ()
   (:documentation "A single object that can move around in the stage. "))
 
