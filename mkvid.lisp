@@ -23,21 +23,8 @@ An error will be signalled if both RX and RY are nonzero.")
           (t
            0))))
 
-(defgeneric coordinates (window &key x y rx ry output suppress-stage)
-  (:documentation "Create a point.
-
-The point is defined by a combination of relative and absolute coordinates.
-Relative coordinates set 1 to be the far edge of the stage (bottom and right),
-whereas absolute coordinates set 1 to 1 pixel in size.
-The argument OUTPUT indicates what output value is desired:
-use the keyword :X to output the X coordinate,
-the keyword :Y to output the Y coordinate,
-or use a function to call that function with those two coordinates.
-SUPPRESS-STAGE cancels the offset created by the stage.")
-  (:method ((window main-window)
-            &key (x 0) (y 0) (rx 0) (ry 0)
-                 (output #'cons)
-                 suppress-stage)
+(defgeneric %coordinates (window suppress-stage x y rx ry output)
+  (:method ((window main-window) suppress-stage x y rx ry output)
     (let ((final-x (+ (if suppress-stage
                           0
                           (stage-topleft-x window))
@@ -60,6 +47,18 @@ SUPPRESS-STAGE cancels the offset created by the stage.")
      (coordinates window :rx left :ry top :output #'q+:make-qpointf)
      (coordinates window :rx width :ry height :output #'q+:make-qsizef
                          :suppress-stage t))))
+(defgeneric coordinates (window &key x y rx ry output)
+  (:documentation "Create a point.
+
+The point is defined by a combination of relative and absolute coordinates.
+Relative coordinates set 1 to be the far edge of the stage (bottom and right),
+whereas absolute coordinates set 1 to 1 pixel in size.
+The argument OUTPUT indicates what output value is desired:
+use the keyword :X to output the X coordinate,
+the keyword :Y to output the Y coordinate,
+or use a function to call that function with those two coordinates.")
+  (:method ((window main-window) &key (x 0) (y 0) (rx 0) (ry 0) (output #'cons))
+    (%coordinates window nil x y rx ry output)))
 
 (defgeneric centred-relative-rectangle (window width height)
   (:documentation "Create a rectangle centred with the stage
@@ -68,6 +67,13 @@ with the provided width and height.")
     (let ((top (/ (- 1 height) 2))
           (left (/ (- 1 width) 2)))
       (relative-rectangle window left top width height))))
+(defgeneric coordinates* (window &key x y rx ry output)
+  (:documentation "As with COORDINATES,
+but without the offset created by the top-left of the stage.
+
+This is normally used for translations and relative distances.")
+  (:method ((window main-window) &key (x 0) (y 0) (rx 0) (ry 0) (output #'cons))
+    (%coordinates window t x y rx ry output)))
 
 (defgeneric offset-box (rectangle coordinates-as-cons)
   (:method (rectangle (coordinates cons))
@@ -110,14 +116,13 @@ TYPE indicates the type of vertices that are provided:
 Any item provided but not required will be ignored."
   (declare (ignore tap rap lrp trp rrp))
   (let ((size
-          (apply #'coordinates window
+          (apply #'coordinates* window
                  :output #'q+:make-qsizef
-                 :suppress-stage t
                  (cond ((or wrp hrp wap hap)
-                        (list :x height-a
-                              :y width-a
-                              :rx height-r
-                              :ry width-r))
+                        (list :x width-a
+                             :y height-a
+                              :rx width-r
+                              :ry height-r))
                        ((or brp lap bap lap)
                         (list :x (- right-a left-a)
                               :y (- bottom-a top-a)
@@ -210,7 +215,7 @@ relative or both absolute.")))))
     (let ((main-box (offset-box
                      (rectangle main-window :centred
                                 :width-r 1/2 :height-r 2/5)
-                     (coordinates main-window :rx 1/6 :ry 0)))
+                     (coordinates* main-window :rx 1/6 :ry 0)))
           (code-box (rectangle main-window :free
                                :left-r 1/20 :top-r 37/40
                                :width-r 9/10 :height-r 1/40))
