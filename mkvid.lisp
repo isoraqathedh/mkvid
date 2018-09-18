@@ -203,9 +203,11 @@ relative or both absolute.")))))
                                 :width-r 1/2 :height-r 2/5)
                      (coordinates* main-window :rx 1/6 :ry 0)))
           (code-box (rectangle main-window :free
-                               :left-r 1/20 :top-r 37/40
-                               :width-r 9/10 :height-r 1/40))
-          (line-box (relative-rectangle main-window 1/20 1/20 9/10 1/40))
+                               :left-r 1/20 :top-r (- 1 1/20 3/40)
+                               :width-r 9/10 :height-r 3/40))
+          (line-box (rectangle main-window :free
+                               :left-r 1/20 :top-r 1/20
+                               :width-r 9/10 :height-r 3/40))
           (background-brush (q+:make-qbrush *background-colour*)))
       (block background
         (rectangle-actor painter (rectangle main-window :free
@@ -216,14 +218,14 @@ relative or both absolute.")))))
       (block station-line-band
         (rectangle-actor painter (rectangle main-window :free
                                             :left-r 9/30 :top-r 0
-                                            :width-r 1/40 :height-r 1)
+                                            :width-r 1/15 :height-r 1)
                          :brush (q+:make-qbrush (q+:make-qcolor 200 15 15))))
 
       (block station-mark
         (circle-actor painter
                       (coordinates main-window
-                                   :x 30 :y 30
-                                   :rx (+ 9/30 1/80) :ry 1/2)
+                                   :rx (+ 9/30 1/80) :ry 1/2
+                                   :output #'q+:make-qpointf)
                       30
                       :brush (q+:make-qbrush *text-colour*)
                       :pen (q+:make-qpen
