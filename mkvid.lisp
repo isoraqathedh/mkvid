@@ -40,13 +40,6 @@ An error will be signalled if both RX and RY are nonzero.")
        ((eql :y) final-y)
        (function (funcall output final-x final-y))))))
 
-(defgeneric relative-rectangle (window left top width height)
-  (:documentation "Create a rectangle with the listed coordinates.")
-  (:method ((window main-window) left top width height)
-    (q+:make-qrectf
-     (coordinates window :rx left :ry top :output #'q+:make-qpointf)
-     (coordinates window :rx width :ry height :output #'q+:make-qsizef
-                         :suppress-stage t))))
 (defgeneric coordinates (window &key x y rx ry output)
   (:documentation "Create a point.
 
@@ -60,13 +53,6 @@ or use a function to call that function with those two coordinates.")
   (:method ((window main-window) &key (x 0) (y 0) (rx 0) (ry 0) (output #'cons))
     (%coordinates window nil x y rx ry output)))
 
-(defgeneric centred-relative-rectangle (window width height)
-  (:documentation "Create a rectangle centred with the stage
-with the provided width and height.")
-  (:method ((window main-window) width height)
-    (let ((top (/ (- 1 height) 2))
-          (left (/ (- 1 width) 2)))
-      (relative-rectangle window left top width height))))
 (defgeneric coordinates* (window &key x y rx ry output)
   (:documentation "As with COORDINATES,
 but without the offset created by the top-left of the stage.
