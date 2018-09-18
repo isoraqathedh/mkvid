@@ -224,7 +224,7 @@ relative or both absolute.")))))
       (block station-mark
         (circle-actor painter
                       (coordinates main-window
-                                   :rx (+ 9/30 1/80) :ry 1/2
+                                   :rx (+ 9/30 1/30) :ry 1/2
                                    :output #'q+:make-qpointf)
                       30
                       :brush (q+:make-qbrush *text-colour*)
