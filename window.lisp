@@ -51,3 +51,7 @@
 ;;   (:method ((style-combination style-combination))
 ;;     (q+:make-qfont (font-face style-combination)
 ;;                    (font-size style-combination))))
+
+(defun main ()
+  (with-main-window (w 'main-window)
+    (setf (q+ window-title w) "mkvid")))

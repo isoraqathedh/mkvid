@@ -271,7 +271,3 @@ relative or both absolute.")))))
                     :include-box t
                     :alignment (logior (q+:qt.align-vcenter)
                                        (q+:qt.align-left)))))))
-
-(defun main ()
-  (with-main-window (w 'main-window)
-    (setf (q+ window-title w) "mkvid")))
