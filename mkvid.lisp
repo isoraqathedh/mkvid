@@ -157,47 +157,10 @@ Any item provided but not required will be ignored."
 relative or both absolute.")))))
      size)))
 
-(defmacro with-brush-pen-font ((painter brush pen font) &body body)
-  (alexandria:with-gensyms (old-brush old-pen old-font)
-    `(let (,old-brush ,old-pen ,old-font)
-       ;; Let new setup
-       (when ,brush
-         (setf  ,old-brush (q+:brush ,painter)
-                (q+ brush ,painter) ,brush))
-       (when ,pen
-         (setf  ,old-pen (q+:pen ,painter)
-                (q+ pen ,painter) ,pen))
-       (when ,font
-         (setf  ,old-font (q+:font ,painter)
-                (q+ font ,painter) ,font))
-       ;; Main stuff
-       ,@body
-       ;; Restore old setup
-       (when ,old-brush
-         (setf (q+ brush ,painter) ,old-brush))
-       (when ,old-pen
-         (setf (q+ pen ,painter) ,old-pen))
-       (when ,old-font
-         (setf (q+ font ,painter) ,old-font)))))
-
-(defun text-actor (painter position text
-                        &key brush pen font include-box alignment)
-  (with-brush-pen-font (painter brush pen font)
-    (when include-box
-      (q+:draw-rect painter position))
-    (q+:draw-text painter position alignment text)))
-
-(defun circle-actor (painter position size &key brush pen)
-  (with-brush-pen-font (painter brush pen nil)
-    (q+:draw-ellipse painter position size size)))
-
-(defun rectangle-actor (painter rectangle &key brush)
-  (with-brush-pen-font (painter brush nil nil)
-    (q+:fill-rect painter rectangle brush)))
-
 (define-override (main-window paint-event) (ev)
   (declare (ignore ev))
   (with-finalizing ((painter (q+:make-qpainter main-window)))
+    (draw-current-scene painter window scene)
     (let ((main-box (offset-box
                      (rectangle main-window :centred
                                 :width-r 1/2 :height-r 2/5)
