@@ -160,7 +160,6 @@ relative or both absolute.")))))
 (define-override (main-window paint-event) (ev)
   (declare (ignore ev))
   (with-finalizing ((painter (q+:make-qpainter main-window)))
-    (draw-current-scene painter window scene)
     (let ((main-box (offset-box
                      (rectangle main-window :centred
                                 :width-r 1/2 :height-r 2/5)
