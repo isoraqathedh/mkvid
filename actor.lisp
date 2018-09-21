@@ -93,13 +93,16 @@
                     (text-of actor))))
   (:method (painter (actor ellipse-actor))))
 
-;; (defclass scene (flare:scene)
-;;   ((actors :accessor actors
-;;            :initarg :actors)))
+(defclass cast ()
+  ((actors :accessor actors
+           :initform (make-hash-table)))
+  (:documentation "Container for a list of actors in a scene."))
 
-(defun draw-current-scene (window scene)
-  "Draw the current scene into the window."
-  (loop for actor in (actors scene)
-        do (draw-figure paintor actor)))
+(defgeneric %define-actor (cast-list name)
+  (:documentation "Ensure the actor NAME exists and has an actor associated with it.")
+  (:method ((cast-list cast) (name symbol))
+    (setf (gethash name (actors cast)) (make-instance 'actor))))
 
-(defun %define-actor (name ))
+(defmethod paint ((paintable actor) target)
+  ;; Do something with the thing here
+  )
