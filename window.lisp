@@ -3,7 +3,7 @@
 (in-package #:mkvid)
 (in-readtable :qtools)
 
-(define-widget main-window (QWidget)
+(defclass stage ()
   ((stage-tl-corner-x :initform 60
                       :initarg :stage-topleft-x
                       :accessor stage-topleft-x)
@@ -15,7 +15,13 @@
                 :accessor stage-width)
    (stage-height :initform 720
                  :initarg :stage-height
-                 :accessor stage-height)))
+                 :accessor stage-height))
+  (:documentation "A stage where all activity will be recorded."))
+
+(define-widget main-window (QWidget)
+  ((stage :initform (make-instance 'stage)
+          :initarg :stage
+          :accessor stage)))
 
 (defparameter *background-colour* (q+:make-qcolor 0 10 25)
   "The background colour for the stage.")
