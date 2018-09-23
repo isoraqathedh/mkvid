@@ -8,12 +8,9 @@
   (:documentation "A single object that can move around in the stage. "))
 
 (defclass rectangle-actor (actor)
-  ((x :accessor actor-width
-      :initarg :actor-width
-      :initform (error "Must specify width."))
-   (y :accessor actor-height
-      :initarg :actor-height
-      :initform (error "Must specify height."))
+  ((size :accessor size-of
+         :initarg :size
+         :initform (error "Must provide size."))
    (brush :accessor brush
           :initarg :brush
           :initform nil)
