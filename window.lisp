@@ -3,25 +3,36 @@
 (in-package #:mkvid)
 (in-readtable :qtools)
 
-(defclass stage ()
-  ((stage-tl-corner-x :initform 60
-                      :initarg :stage-topleft-x
-                      :accessor stage-topleft-x)
-   (stage-tl-corner-y :initform 60
-                      :initarg :stage-topleft-y
-                      :accessor stage-topleft-y)
-   (stage-width :initform 1280
+(define-widget main-window (QWidget)
+  ())
+
+;;; Stage
+;;; a stage is a place where all the action is held and recorded.
+(define-widget qstage (QWidget)
+  ((stage-width :initform 1280
                 :initarg :stage-width
                 :accessor stage-width)
    (stage-height :initform 720
                  :initarg :stage-height
                  :accessor stage-height))
-  (:documentation "A stage where all activity will be recorded."))
+  (:documentation "A stage where all activity will be recorded.
 
-(define-widget main-window (QWidget)
-  ((stage :initform (make-instance 'stage)
-          :initarg :stage
-          :accessor stage)))
+(In qwidget format, experimental)"))
+
+(define-override (qstage size-hint) ()
+  (q+:make-qsize stage-width stage-height))
+
+(define-override (qstage minimum-size-hint) ()
+  (q+:make-qsize stage-width stage-height))
+
+(define-subwidget (main-window the-stage) (make-instance 'qstage))
+
+(define-subwidget (main-window visible-test) (q+:make-qlcdnumber main-window)
+  (q+:set-digit-count visible-test 5))
+
+(define-subwidget (main-window layout) (q+:make-qvboxlayout main-window)
+  (q+:add-widget layout the-stage)
+  (q+:add-widget layout visible-test))
 
 (defparameter *background-colour* (q+:make-qcolor 0 10 25)
   "The background colour for the stage.")

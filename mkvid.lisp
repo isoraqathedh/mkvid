@@ -13,7 +13,7 @@ the same as 1 unit in the y direction.
 
 This function can only convert one direction at any one time.
 An error will be signalled if both RX and RY are nonzero.")
-  (:method ((window stage) &key (rx 0) (ry 0))
+  (:method ((window qstage) &key (rx 0) (ry 0))
     (cond ((and (/= 0 rx) (/= 0 ry))
            (error "Cannot convert both rx and ry at once."))
           ((/= 0 rx)
@@ -23,18 +23,19 @@ An error will be signalled if both RX and RY are nonzero.")
           (t
            0))))
 
-(defgeneric %coordinates (window suppress-stage x y rx ry output)
-  (:method ((window stage) suppress-stage x y rx ry output)
-    (let ((final-x (+ (if suppress-stage
-                          0
-                          (stage-topleft-x window))
-                      x
-                      (relative window :rx rx)))
-          (final-y (+ (if suppress-stage
-                          0
-                          (stage-topleft-y window))
-                      y
-                      (relative window :ry ry))))
+;; Helper functions for `%coordinates'
+(defun arg-x (x y)
+  (declare (ignore y))
+  x)
+
+(defun arg-y (x y)
+  (declare (ignore x))
+  y)
+
+(defgeneric %coordinates (window x y rx ry output)
+  (:method ((window qstage) x y rx ry output)
+    (let ((final-x (+ x (relative window :rx rx)))
+          (final-y (+ y (relative window :ry ry))))
      (etypecase output
        ((eql :x) final-x)
        ((eql :y) final-y)
@@ -102,7 +103,7 @@ TYPE indicates the type of vertices that are provided:
 Any item provided but not required will be ignored."
   (declare (ignore tap rap lrp trp rrp))
   (let ((size
-          (apply #'coordinates* stage
+          (apply #'coordinates stage
                  :output #'q+:make-qsizef
                  (cond ((or wrp hrp wap hap)
                         (list :x width-a
@@ -157,68 +158,73 @@ Any item provided but not required will be ignored."
 relative or both absolute.")))))
      size)))
 
+(defparameter *counter* 9876)
+
+(define-override (qstage paint-event) (ev)
+  (declare (ignore ev))
+  (with-finalizing ((painter (q+:make-qpainter qstage))
+                    (main-box (offset-box
+                               (rectangle qstage :centred
+                                          :width-r 1/2 :height-r 2/5)
+                               (coordinates qstage :rx 1/6 :ry 0)))
+                    (code-box (rectangle qstage :free
+                                         :left-r 1/20 :top-r (- 1 1/20 3/40)
+                                         :width-r 9/10 :height-r 3/40))
+                    (line-box (rectangle qstage :free
+                                         :left-r 1/20 :top-r 1/20
+                                         :width-r 9/10 :height-r 3/40))
+                    (background-brush (q+:make-qbrush *background-colour*)))
+    (block background
+      (rectangle-actor painter (rectangle qstage :free
+                                          :left-r 0 :top-r 0
+                                          :width-r 1 :height-r 1)
+                       :brush background-brush))
+
+    (block station-line-band
+      (rectangle-actor painter (rectangle qstage :free
+                                          :left-r 9/30 :top-r 0
+                                          :width-r 1/15 :height-r 1)
+                       :brush (q+:make-qbrush (q+:make-qcolor 200 15 15))))
+
+    (block station-mark
+      (circle-actor painter
+                    (coordinates qstage
+                                 :rx (+ 9/30 1/30) :ry 1/2
+                                 :output #'q+:make-qpointf)
+                    30
+                    :brush (q+:make-qbrush *text-colour*)
+                    :pen (q+:make-qpen
+                          (q+:make-qbrush
+                           (q+:make-qcolor 255 255 255))
+                          3)))
+
+    (block station-name-box
+      (text-actor painter main-box "London King's Cross"
+                  :brush (q+:make-qbrush *background-colour*)
+                  :pen *text-colour*
+                  :font (q+:make-qfont "Inziu Iosevka TC" 35)
+                  :include-box t
+                  :alignment (logior (q+:qt.align-vcenter)
+                                     (q+:qt.align-left))))
+
+    (block station-code-box
+      (text-actor painter code-box "LKX"
+                  :brush background-brush
+                  :font (q+:make-qfont "Inziu Iosevka TC" 20)
+                  :pen *text-colour*
+                  :include-box t
+                  :alignment (logior (q+:qt.align-vcenter)
+                                     (q+:qt.align-left))))
+
+    (block station-line-name-box
+      (text-actor painter line-box "East Coast Main Line"
+                  :brush background-brush
+                  :font (q+:make-qfont "Inziu Iosevka TC" 20)
+                  :pen *text-colour*
+                  :include-box t
+                  :alignment (logior (q+:qt.align-vcenter)
+                                     (q+:qt.align-left))))))
+
 (define-override (main-window paint-event) (ev)
   (declare (ignore ev))
-  (let ((main-stage (stage main-window)))
-   (with-finalizing ((painter (q+:make-qpainter main-window))
-                     (main-box (offset-box
-                                (rectangle main-stage :centred
-                                           :width-r 1/2 :height-r 2/5)
-                                (coordinates* main-stage :rx 1/6 :ry 0)))
-                     (code-box (rectangle main-stage :free
-                                          :left-r 1/20 :top-r (- 1 1/20 3/40)
-                                          :width-r 9/10 :height-r 3/40))
-                     (line-box (rectangle main-stage :free
-                                          :left-r 1/20 :top-r 1/20
-                                          :width-r 9/10 :height-r 3/40))
-                     (background-brush (q+:make-qbrush *background-colour*)))
-     (block background
-       (rectangle-actor painter (rectangle main-stage :free
-                                           :left-r 0 :top-r 0
-                                           :width-r 1 :height-r 1)
-                        :brush background-brush))
-
-     (block station-line-band
-       (rectangle-actor painter (rectangle main-stage :free
-                                           :left-r 9/30 :top-r 0
-                                           :width-r 1/15 :height-r 1)
-                        :brush (q+:make-qbrush (q+:make-qcolor 200 15 15))))
-
-     (block station-mark
-       (circle-actor painter
-                     (coordinates main-stage
-                                  :rx (+ 9/30 1/30) :ry 1/2
-                                  :output #'q+:make-qpointf)
-                     30
-                     :brush (q+:make-qbrush *text-colour*)
-                     :pen (q+:make-qpen
-                           (q+:make-qbrush
-                            (q+:make-qcolor 255 255 255))
-                           3)))
-
-     (block station-name-box
-       (text-actor painter main-box "London King's Cross"
-                   :brush (q+:make-qbrush *background-colour*)
-                   :pen *text-colour*
-                   :font (q+:make-qfont "Inziu Iosevka TC" 35)
-                   :include-box t
-                   :alignment (logior (q+:qt.align-vcenter)
-                                      (q+:qt.align-left))))
-
-     (block station-code-box
-       (text-actor painter code-box "LKX"
-                   :brush background-brush
-                   :font (q+:make-qfont "Inziu Iosevka TC" 20)
-                   :pen *text-colour*
-                   :include-box t
-                   :alignment (logior (q+:qt.align-vcenter)
-                                      (q+:qt.align-left))))
-
-     (block station-line-name-box
-       (text-actor painter line-box "East Coast Main Line"
-                   :brush background-brush
-                   :font (q+:make-qfont "Inziu Iosevka TC" 20)
-                   :pen *text-colour*
-                   :include-box t
-                   :alignment (logior (q+:qt.align-vcenter)
-                                      (q+:qt.align-left)))))))
+  (q+:display visible-test *counter*))
