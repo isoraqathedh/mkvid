@@ -44,9 +44,15 @@
 ;;   (funcall func)
 ;;   (q+:restore painter))
 
-(defmacro with-brush-pen-font ((painter brush pen font) &body body)
+(defmacro with-saved-painter-state (painter &body body)
+  "Save the painter state, execute BODY, then restore it."
   `(progn
      (q+:save ,painter)
+     ,@body
+     (q+:restore ,painter)))
+
+(defmacro with-brush-pen-font ((painter brush pen font) &body body)
+  `(with-saved-painter-state ,painter
      ;; Let new setup
      (when ,brush
        (setf (q+ brush ,painter) ,brush))
@@ -55,9 +61,7 @@
      (when ,font
        (setf (q+ font ,painter) ,font))
      ;; Main stuff
-     ,@body
-     ;; Restore old setup
-     (q+:restore ,painter)))
+     ,@body))
 
 (defun text-actor (painter position text
                    &key brush pen font include-box alignment)
