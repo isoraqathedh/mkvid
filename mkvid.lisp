@@ -51,16 +51,12 @@ The argument OUTPUT indicates what output value is desired:
 use the keyword :X to output the X coordinate,
 the keyword :Y to output the Y coordinate,
 or use a function to call that function with those two coordinates.")
-  (:method ((window stage) &key (x 0) (y 0) (rx 0) (ry 0) (output #'cons))
-    (%coordinates window nil x y rx ry output)))
+  (:method ((window qstage) &key (x 0) (y 0) (rx 0) (ry 0) (output #'cons))
+    (%coordinates window x y rx ry output)))
 
-(defgeneric coordinates* (window &key x y rx ry output)
-  (:documentation "As with COORDINATES,
-but without the offset created by the top-left of the stage.
-
-This is normally used for translations and relative distances.")
-  (:method ((window stage) &key (x 0) (y 0) (rx 0) (ry 0) (output #'cons))
-    (%coordinates window t x y rx ry output)))
+(defun origin (stage &optional (function #'cons))
+  "Return the coordinates corresponding to the top-left of the stage."
+  (coordinates stage :output function))
 
 (defgeneric offset-box (rectangle coordinates-as-cons)
   (:method (rectangle (coordinates cons))
