@@ -9,22 +9,24 @@
 
 (defclass rectangle-actor (actor)
   ((size :accessor size-of
-         :initarg :size
-         :initform (error "Must provide size."))
+         :initarg :size)
    (brush :accessor brush
-          :initarg :brush
-          :initform nil)
+          :initarg :brush)
    (pen :accessor pen
-        :initarg :pen
-        :initform nil))
-  (:documentation "A rectangle."))
+        :initarg :pen))
+  (:documentation "A rectangle.")
+  (:default-initargs
+   :size (error "Must provide size.")
+   :brush nil
+   :pen nil))
 
 (defclass text-actor (rectangle-actor)
   ((text :accessor text
-         :initarg :text)
-   (x :initform nil)
-   (y :initform nil))
-  (:documentation "A rectangle with text."))
+         :initarg :text))
+  (:documentation "A rectangle with text.")
+  (:default-initargs
+   :size nil
+   :text "(...)"))
 
 (defclass ellipse-actor (rectangle-actor)
   ())
@@ -72,24 +74,8 @@
   (with-brush-pen-font (painter brush nil nil)
     (q+:fill-rect painter rectangle brush)))
 
-(defgeneric draw-figure (painter actor)
-  (:documentation "Draw the figure onto the stage.")
-  (:method (painter (actor rectangle-actor))
-    (with-brush-pen-font (painter (brush actor) nil nil)
-      (q+:fill-rect painter (rectangle-of actor) brush)))
-  (:method (painter (actor text-actor))
-    (with-brush-pen-font (painter
-                          (brush actor)
-                          (pen actor)
-                          (font actor))
-      (when (include-box actor)
-        (q+:draw-rect painter (rectangle-of actor)))
-      (q+:draw-text painter
-                    (rectangle-of actor)
-                    (alignment-of actor)
-                    (text-of actor))))
-  (:method (painter (actor ellipse-actor))))
-
+;;; Casts are a list of actors.
+;;; but maybe Flare's `scene' is what we need.
 (defclass cast ()
   ((actors :accessor actors
            :initform (make-hash-table)))
@@ -100,6 +86,22 @@
   (:method ((cast-list cast) (name symbol))
     (setf (gethash name (actors cast)) (make-instance 'actor))))
 
-(defmethod paint ((paintable actor) target)
-  ;; Do something with the thing here
-  )
+;;; We're painting on `qpainter's, but they don't actually exist in lisp,
+;;; so we're specialising on `qobject's instead.
+(defmethod paint ((paintable rectangle-actor) (target qobject))
+  (with-brush-pen-font (target (brush actor) nil nil)
+    (q+:fill-rect target
+                  (q+:make-qrectf (coordinates :output #'q+:make-qpointf)
+                                  (size paintable)))))
+
+(defmethod paint ((paintable ellipse-actor) (target qobject))
+  (with-brush-pen-font (target (brush paintable) (pen paintable) nil)
+    (q+:draw-ellipse target
+                     (coordinates* :output #'q+:make-qpointf)
+                     (size paintable))))
+
+(defmethod paint ((paintable text-actor) (target qobject))
+  (with-brush-pen-font (target (brush paintable) (pen paintable) (font paintable))
+    (when (include-box paintable)
+      (q+:draw-rect target (origin)))
+    (q+:draw-text target position (alignment paintable) (text paintable))))
