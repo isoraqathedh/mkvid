@@ -114,6 +114,11 @@
   (q+:add-widget layout controls-and-stage-group-box)
   (q+:add-widget layout clock-group-box))
 
+;; (define-slot (viewer update) ()
+;;   (declare (connected timer (timeout)))
+;;   (update scene)
+;;   (q+:repaint viewer))
+
 ;;; Main function.
 (defun main ()
   (with-main-window (w 'main-window)
