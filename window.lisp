@@ -8,6 +8,7 @@
 
 ;;; Stage
 ;;; a stage is a place where all the action is held and recorded.
+;;; It has a size that is the same as in the final video.
 (define-widget qstage (QWidget)
   ((stage-width :initform 1280
                 :initarg :stage-width
@@ -15,9 +16,7 @@
    (stage-height :initform 720
                  :initarg :stage-height
                  :accessor stage-height))
-  (:documentation "A stage where all activity will be recorded.
-
-(In qwidget format, experimental)"))
+  (:documentation "A stage where all activity will be recorded."))
 
 (define-override (qstage size-hint) ()
   (q+:make-qsize stage-width stage-height))
