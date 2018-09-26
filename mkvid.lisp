@@ -154,7 +154,7 @@ Any item provided but not required will be ignored."
 relative or both absolute.")))))
      size)))
 
-(defparameter *counter* 9876)
+(defparameter *counter* 400)
 
 (define-override (qstage paint-event) (ev)
   (declare (ignore ev))
