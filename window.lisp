@@ -62,6 +62,7 @@
   (q+:add-widget layout the-stage)
   (q+:add-widget layout clock-group-box))
 
+;;; Main function.
 (defun main ()
   (with-main-window (w 'main-window)
     (setf (q+ window-title w) "mkvid")))
