@@ -220,7 +220,3 @@ relative or both absolute.")))))
                   :include-box t
                   :alignment (logior (q+:qt.align-vcenter)
                                      (q+:qt.align-left))))))
-
-(define-override (main-window paint-event) (ev)
-  (declare (ignore ev))
-  (q+:display visible-test *counter*))
