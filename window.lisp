@@ -34,9 +34,9 @@
   (q+:add-widget layout visible-test))
 
 
-;; (define-subwidget (viewer timer) (q+:make-qtimer viewer)
-;;   (setf (q+:single-shot timer) nil)
-;;   (q+:start timer (round 1000/60)))
+(define-subwidget (main-window timer) (q+:make-qtimer main-window)
+  (setf (q+:single-shot timer) nil)
+  (q+:start timer (round 1000/60)))
 
 ;; (define-slot (viewer update) ()
 ;;   (declare (connected timer (timeout)))
