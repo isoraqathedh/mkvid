@@ -44,27 +44,6 @@
 ;;   (update scene)
 ;;   (q+:repaint viewer))
 
-;; (defclass style-combination ()
-;;   ((font-face :initarg :font-face
-;;               :accessor font-face
-;;               :initform nil)
-;;    (font-size :initarg :font-size
-;;               :accessor font-size
-;;               :initform nil)
-;;    (fg-colour :initarg :fg-colour
-;;               :accessor fg-colour
-;;               :initform nil)
-;;    (bg-colour :initarg :bg-colour
-;;               :accessor bg-colour
-;;               :initform nil))
-;;   (:documentation "A combination of styles."))
-
-;; (defgeneric make-font (style-combination)
-;;   (:documentation "Make a font object based on the style combination.")
-;;   (:method ((style-combination style-combination))
-;;     (q+:make-qfont (font-face style-combination)
-;;                    (font-size style-combination))))
-
 (defun main ()
   (with-main-window (w 'main-window)
     (setf (q+ window-title w) "mkvid")))
