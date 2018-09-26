@@ -12,7 +12,9 @@
             :documentation "A counter for a particular timer.")
    (fps :accessor fps
         :initform *default-fps*
-        :initarg :fps)))
+        :initarg :fps)
+   (timer-running :accessor timer-running
+                  :initform nil)))
 
 ;;; Stage
 ;;; a stage is a place where all the action is held and recorded.
@@ -34,17 +36,65 @@
 
 (define-subwidget (main-window the-stage) (make-instance 'qstage))
 
+;;; Controls
+;;; Here are some buttons used for controls.
+;;; As of yet they are not used but they help constrain the stage a bit.
+(define-subwidget (main-window start-stop-button)
+    (q+:make-qpushbutton "Start/Stop" main-window))
+
+(define-subwidget (main-window restart-button)
+    (q+:make-qpushbutton "Restart" main-window))
+
+(define-subwidget (main-window load-button)
+    (q+:make-qpushbutton "Load" main-window))
+
+(define-subwidget (main-window render-button)
+    (q+:make-qpushbutton "Render" main-window))
+
+(define-subwidget (main-window information)
+    (q+:make-qtextedit main-window)
+  (q+:set-plain-text information "This is a placeholder text."))
+
+(define-subwidget (main-window controls-layout)
+    (q+:make-qgridlayout main-window)
+  (q+:add-widget controls-layout start-stop-button 0 0 1 2)
+  (q+:add-widget controls-layout restart-button    1 0)
+  (q+:add-widget controls-layout load-button       1 1)
+  (q+:add-widget controls-layout render-button     2 0 1 2)
+  (q+:add-widget controls-layout information       3 0 6 2))
+
+(define-subwidget (main-window controls-group-box)
+    (q+:make-qgroupbox "Controls" main-window)
+  (q+:set-layout controls-group-box controls-layout))
+
+(define-subwidget (main-window controls-and-stage)
+    (q+:make-qhboxlayout main-window)
+  (q+:add-widget controls-and-stage the-stage)
+  (q+:add-widget controls-and-stage controls-group-box))
+
+(define-subwidget (main-window controls-and-stage-group-box)
+    (q+:make-qgroupbox main-window)
+  (q+:set-layout controls-and-stage-group-box controls-and-stage))
+
+(define-slot (main-window toggle-start-stop) ()
+  (declare (connected start-stop-button (released)))
+  (setf timer-running (not timer-running)))
+
+(define-slot (main-window reset-timer) ()
+  (declare (connected restart-button (released)))
+  (setf counter 0 timer-running nil))
+
 ;;; Clocks
 ;;; This is the animation clock that motions would be timed against.
 ;;; It also includes a display.
-(define-subwidget (main-window seconds-display) (q+:make-qlcdnumber main-window)
-  (q+:set-digit-count seconds-display 10)
-  (q+:display seconds-display "--"))
-(define-subwidget (main-window seconds-label) (q+:make-qlabel "Seconds - Frames"))
+(define-subwidget (main-window timer-display) (q+:make-qlcdnumber main-window)
+  (q+:set-digit-count timer-display 10)
+  (q+:display timer-display "----"))
+(define-subwidget (main-window timer-label) (q+:make-qlabel "Seconds - Frames"))
 
 (define-subwidget (main-window clock) (q+:make-qgridlayout main-window)
-  (q+:add-widget clock seconds-label 0 0)
-  (q+:add-widget clock seconds-display 1 0 3 1))
+  (q+:add-widget clock timer-label 0 0)
+  (q+:add-widget clock timer-display 1 0 3 1))
 
 (define-subwidget (main-window clock-group-box) (q+:make-qgroupbox "Clock" main-window)
   (q+:set-layout clock-group-box clock))
@@ -55,11 +105,13 @@
 
 (define-slot (main-window update) ()
   (declare (connected timer (timeout)))
-  (multiple-value-bind (seconds frames) (floor (incf counter) fps)
-    (q+:display seconds-display (format nil "~d-~2,'0d" seconds frames))))
+  (when timer-running
+    (incf counter))
+  (multiple-value-bind (seconds frames) (floor counter fps)
+    (q+:display timer-display (format nil "~d-~2,'0d" seconds frames))))
 
 (define-subwidget (main-window layout) (q+:make-qvboxlayout main-window)
-  (q+:add-widget layout the-stage)
+  (q+:add-widget layout controls-and-stage-group-box)
   (q+:add-widget layout clock-group-box))
 
 ;;; Main function.
