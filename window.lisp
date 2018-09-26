@@ -34,10 +34,6 @@
   (q+:add-widget layout the-stage)
   (q+:add-widget layout visible-test))
 
-(defparameter *background-colour* (q+:make-qcolor 0 10 25)
-  "The background colour for the stage.")
-(defparameter *text-colour* (q+:make-qcolor 240 240 15)
-  "The foreground colour for the stage.")
 
 ;; (define-subwidget (viewer timer) (q+:make-qtimer viewer)
 ;;   (setf (q+:single-shot timer) nil)

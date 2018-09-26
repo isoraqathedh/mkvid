@@ -3,6 +3,11 @@
 (in-package #:mkvid)
 (in-readtable :qtools)
 
+(defparameter *background-colour* (q+:make-qcolor 0 10 25)
+  "The background colour for the stage.")
+(defparameter *text-colour* (q+:make-qcolor 240 240 15)
+  "The foreground colour for the stage.")
+
 (defclass actor (flare:particle)
   ()
   (:documentation "A single object that can move around in the stage. "))
