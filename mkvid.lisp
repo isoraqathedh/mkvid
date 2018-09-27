@@ -54,9 +54,8 @@ or use a function to call that function with those two coordinates.")
   (:method ((window qstage) &key (x 0) (y 0) (rx 0) (ry 0) (output #'cons))
     (%coordinates window x y rx ry output)))
 
-(defun origin (stage &optional (function #'cons))
-  "Return the coordinates corresponding to the top-left of the stage."
-  (coordinates stage :output function))
+(defvar *origin* (q+:make-qpointf 0 0)
+  "The origin value.")
 
 (defgeneric offset-box (rectangle coordinates-as-cons)
   (:method (rectangle (coordinates cons))
