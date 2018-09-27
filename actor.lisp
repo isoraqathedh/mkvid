@@ -12,26 +12,29 @@
   ()
   (:documentation "A single object that can move around in the stage. "))
 
-(defclass rectangle-actor (actor)
-  ((size :accessor size-of
-         :initarg :size)
-   (brush :accessor brush
-          :initarg :brush)
-   (pen :accessor pen
-        :initarg :pen))
+(defclass rectangle-actor (actor flare:sized-entity)
+  ((background-colour :accessor background-colour :initarg :background)
+   (foreground-colour :accessor foreground-colour :initarg :foreground)
+   (border-width :accessor border-width :initarg :border-width))
   (:documentation "A rectangle.")
   (:default-initargs
-   :size (error "Must provide size.")
-   :brush nil
-   :pen nil))
+   :background-colour nil
+   :foreground-colour *text-colour*))
 
 (defclass text-actor (rectangle-actor)
-  ((text :accessor text
-         :initarg :text))
+  ((text :accessor text :initarg :text)
+   (alignment :accessor alignment :initarg :alignment)
+   (font :accessor font :initarg :font)
+   (font-size :accessor font-size :initarg :font-size)
+   (include-box :accessor include-box :initarg :include-box))
   (:documentation "A rectangle with text.")
   (:default-initargs
    :size nil
-   :text "(...)"))
+   :text "(...)"
+   :alignment 0
+   :font "sans-serif"
+   :font-size 15
+   :include-box nil))
 
 (defclass ellipse-actor (rectangle-actor)
   ())
