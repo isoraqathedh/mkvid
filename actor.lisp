@@ -103,17 +103,23 @@
 (defmethod paint ((paintable rectangle-actor) (target qobject))
   (with-brush-pen-font (target (brush actor) nil nil)
     (q+:fill-rect target
-                  (q+:make-qrectf (coordinates :output #'q+:make-qpointf)
-                                  (size paintable)))))
+                  (q+:make-qrectf *origin*
+                                  (size-of paintable)))))
 
 (defmethod paint ((paintable ellipse-actor) (target qobject))
-  (with-brush-pen-font (target (brush paintable) (pen paintable) nil)
-    (q+:draw-ellipse target
-                     (coordinates* :output #'q+:make-qpointf)
-                     (size paintable))))
+  (with-finalizing ((brush (q+:make-qbrush (brush paintable)))
+                    (pen (q+:make-qpen (pen paintable))))
+    (with-brush-pen-font (target brush pen nil)
+      (q+:draw-ellipse target *origin* (size paintable)))))
 
 (defmethod paint ((paintable text-actor) (target qobject))
-  (with-brush-pen-font (target (brush paintable) (pen paintable) (font paintable))
-    (when (include-box paintable)
-      (q+:draw-rect target (origin)))
-    (q+:draw-text target position (alignment paintable) (text paintable))))
+  (with-finalizing ((brush (apply #'q+:make-qbrush (brush paintable)))
+                    (pen (apply #'q+:make-qpen (pen paintable)))
+                    (font (apply #'q+:make-qfont (font paintable))))
+    (with-brush-pen-font (target brush pen font)
+      (when (include-box paintable)
+        (q+:draw-rect target *origin* (size paintable)))
+      (q+:draw-text target
+                    *origin*
+                    (alignment paintable)
+                    (text paintable)))))
