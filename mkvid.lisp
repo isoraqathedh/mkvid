@@ -3,7 +3,7 @@
 (in-package #:mkvid)
 (in-readtable :qtools)
 
-(defgeneric relative (window &key rx ry)
+(defgeneric relative (window axis value)
   (:documentation "Convert relative coordinates to an absolute one.
 
 Relative coordinates are those that set 1 to the far edge of the stage
@@ -12,16 +12,12 @@ As such 1 unit in the x direction is not necessarily
 the same as 1 unit in the y direction.
 
 This function can only convert one direction at any one time.
-An error will be signalled if both RX and RY are nonzero.")
-  (:method ((window qstage) &key (rx 0) (ry 0))
-    (cond ((and (/= 0 rx) (/= 0 ry))
-           (error "Cannot convert both rx and ry at once."))
-          ((/= 0 rx)
-           (* (stage-width window) rx))
-          ((/= 0 ry)
-           (* (stage-height window) ry))
-          (t
-           0))))
+AXIS indicates which axis to convert with (:RX or :RY),
+and VALUE is the method to change.")
+  (:method ((window qstage) (axis (eql :rx)) value)
+    (* (stage-width window) value))
+  (:method ((window qstage) (axis (eql :ry)) value)
+    (* (stage-height window) value)))
 
 ;; Helper functions for `%coordinates'
 (defun arg-x (x y)
