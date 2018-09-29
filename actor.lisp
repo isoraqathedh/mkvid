@@ -18,8 +18,10 @@
    (border-width :accessor border-width :initarg :border-width))
   (:documentation "A rectangle.")
   (:default-initargs
-   :background-colour nil
-   :foreground-colour *text-colour*))
+   :background-colour *background-colour*
+   :foreground-colour *text-colour*
+   :border-width nil
+   :size (vec2 50 50)))
 
 (defclass text-actor (rectangle-actor)
   ((text :accessor text :initarg :text)
@@ -105,9 +107,10 @@
       (q+:draw-ellipse target *origin* (size paintable)))))
 
 (defmethod paint ((paintable text-actor) (target qobject))
-  (with-finalizing ((brush (apply #'q+:make-qbrush (brush paintable)))
-                    (pen (apply #'q+:make-qpen (pen paintable)))
-                    (font (apply #'q+:make-qfont (font paintable))))
+  (with-finalizing ((brush (q+:make-qbrush (brush paintable)))
+                    (pen (q+:make-qpen (pen paintable)))
+                    (font (q+:make-qfont (font paintable)
+                                         (font-size paintable))))
     (with-brush-pen-font (target brush pen font)
       (when (include-box paintable)
         (q+:draw-rect target *origin* (size paintable)))
