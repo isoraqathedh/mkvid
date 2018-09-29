@@ -44,14 +44,6 @@
              :initform nil
              :initarg :contents)))
 
-;; (defmethod flare:call-with-translation ((func function) (painter painter) vec)
-;;   (q+:save painter)
-;;   (q+:translate painter
-;;                 (3d-vectors:vx vec)
-;;                 (3d-vectors:vy vec))
-;;   (funcall func)
-;;   (q+:restore painter))
-
 (defmacro with-saved-painter-state (painter &body body)
   "Save the painter state, execute BODY, then restore it."
   `(progn
@@ -123,3 +115,9 @@
                     *origin*
                     (alignment paintable)
                     (text paintable)))))
+
+;;; Flare
+(defmethod flare:call-with-translation ((func function) (painter painter) vec)
+  (with-saved-painter-state painter
+    (q+:translate painter (vx vec) (vy vec))
+    (funcall func)))
