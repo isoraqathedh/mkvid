@@ -2,7 +2,7 @@
 
 (defpackage #:info.isoraqathedh.mkvid
   (:nicknames #:mkvid)
-  (:use #:cl+qt)
+  (:use #:cl+qt #:3d-vectors)
   (:import-from #:flare
                 #:particle #:scene #:define-progression #:enter #:start #:calc
                 #:paint)

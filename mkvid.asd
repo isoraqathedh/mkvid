@@ -6,7 +6,7 @@
   :license  "MIT"
   :version "0.0.1"
   :serial t
-  :depends-on (#:qtools #:qtcore #:qtgui #:flare)
+  :depends-on (#:qtools #:qtcore #:qtgui #:flare #:3d-vectors)
   :components ((:file "package")
                (:file "window")
                (:file "actor")
