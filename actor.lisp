@@ -3,9 +3,9 @@
 (in-package #:mkvid)
 (in-readtable :qtools)
 
-(defparameter *background-colour* (q+:make-qcolor 0 10 25)
+(defparameter *background-colour* (vec3 0 10 25)
   "The background colour for the stage.")
-(defparameter *text-colour* (q+:make-qcolor 240 240 15)
+(defparameter *text-colour* (vec3 240 240 15)
   "The foreground colour for the stage.")
 
 (defclass actor (flare:particle)
