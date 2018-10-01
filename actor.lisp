@@ -113,7 +113,7 @@
                                          (font-size paintable))))
     (with-brush-pen-font (target brush pen font)
       (when (include-box paintable)
-        (q+:draw-rect target *origin* (size paintable)))
+        (call-next-method))
       (q+:draw-text target
                     *origin*
                     (alignment paintable)
