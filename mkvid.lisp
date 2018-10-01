@@ -153,18 +153,29 @@ relative or both absolute.")))))
 
 (define-override (qstage paint-event) (ev)
   (declare (ignore ev))
-  (with-finalizing ((painter (q+:make-qpainter qstage))
-                    (main-box (offset-box
-                               (rectangle qstage :centred
-                                          :width-r 1/2 :height-r 2/5)
-                               (coordinates qstage :rx 1/6 :ry 0)))
-                    (code-box (rectangle qstage :free
-                                         :left-r 1/20 :top-r (- 1 1/20 3/40)
-                                         :width-r 9/10 :height-r 3/40))
-                    (line-box (rectangle qstage :free
-                                         :left-r 1/20 :top-r 1/20
-                                         :width-r 9/10 :height-r 3/40))
-                    (background-brush (q+:make-qbrush *background-colour*)))
+  (with-finalizing* ((painter (q+:make-qpainter qstage))
+                     (main-box (offset-box
+                                (rectangle qstage :centred
+                                           :width-r 1/2 :height-r 2/5)
+                                (coordinates qstage :rx 1/6 :ry 0)))
+                     (code-box (rectangle qstage :free
+                                          :left-r 1/20 :top-r (- 1 1/20 3/40)
+                                          :width-r 9/10 :height-r 3/40))
+                     (line-box (rectangle qstage :free
+                                          :left-r 1/20 :top-r 1/20
+                                          :width-r 9/10 :height-r 3/40))
+                     (background-colour (q+:make-qcolor
+                                         (floor (vx *background-colour*))
+                                         (floor (vy *background-colour*))
+                                         (floor (vz *background-colour*))))
+                     (background-brush (q+:make-qbrush background-colour))
+                     (band-colour (q+:make-qcolor 200 15 15))
+                     (band-brush (q+:make-qbrush band-colour))
+                     (pen-colour (q+:make-qcolor
+                                  (floor (vx *text-colour*))
+                                  (floor (vy *text-colour*))
+                                  (floor (vz *text-colour*))))
+                     (pen (q+:make-qpen pen-colour)))
     (block background
       (rectangle-actor painter (rectangle qstage :free
                                           :left-r 0 :top-r 0
@@ -175,7 +186,7 @@ relative or both absolute.")))))
       (rectangle-actor painter (rectangle qstage :free
                                           :left-r 9/30 :top-r 0
                                           :width-r 1/15 :height-r 1)
-                       :brush (q+:make-qbrush (q+:make-qcolor 200 15 15))))
+                       :brush band-brush))
 
     (block station-mark
       (circle-actor painter
@@ -183,7 +194,7 @@ relative or both absolute.")))))
                                  :rx (+ 9/30 1/30) :ry 1/2
                                  :output #'q+:make-qpointf)
                     30
-                    :brush (q+:make-qbrush *text-colour*)
+                    :brush (q+:make-qbrush pen-colour)
                     :pen (q+:make-qpen
                           (q+:make-qbrush
                            (q+:make-qcolor 255 255 255))
@@ -191,8 +202,8 @@ relative or both absolute.")))))
 
     (block station-name-box
       (text-actor painter main-box "London King's Cross"
-                  :brush (q+:make-qbrush *background-colour*)
-                  :pen *text-colour*
+                  :brush background-brush
+                  :pen pen
                   :font (q+:make-qfont "Inziu Iosevka TC" 35)
                   :include-box t
                   :alignment (logior (q+:qt.align-vcenter)
@@ -202,7 +213,7 @@ relative or both absolute.")))))
       (text-actor painter code-box "LKX"
                   :brush background-brush
                   :font (q+:make-qfont "Inziu Iosevka TC" 20)
-                  :pen *text-colour*
+                  :pen pen
                   :include-box t
                   :alignment (logior (q+:qt.align-vcenter)
                                      (q+:qt.align-left))))
@@ -211,7 +222,7 @@ relative or both absolute.")))))
       (text-actor painter line-box "East Coast Main Line"
                   :brush background-brush
                   :font (q+:make-qfont "Inziu Iosevka TC" 20)
-                  :pen *text-colour*
+                  :pen pen
                   :include-box t
                   :alignment (logior (q+:qt.align-vcenter)
                                      (q+:qt.align-left))))))
