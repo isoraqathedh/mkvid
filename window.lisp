@@ -25,16 +25,44 @@
                 :accessor stage-width)
    (stage-height :initform 720
                  :initarg :stage-height
-                 :accessor stage-height))
+                 :accessor stage-height)
+   (progression :initarg :progression
+                :reader progression)
+   (scene :initform (make-instance 'flare:scene)
+          :reader scene)
+   (background :initform (vec 0 0 0)
+               :accessor background))
   (:documentation "A stage where all activity will be recorded."))
 
-(define-override (qstage size-hint) ()
-  (q+:make-qsize stage-width stage-height))
-
-(define-override (qstage minimum-size-hint) ()
-  (q+:make-qsize stage-width stage-height))
+(defmethod initialize-instance :after ((qstage qstage) &key &allow-other-keys)
+  (setf (q+:fixed-size qstage) (values (stage-width qstage)
+                                       (stage-height qstage)))
+  (flare:start (scene qstage))
+  (flare:start (flare:enter
+                (flare:progression-instance
+                 (progression qstage))
+                (scene qstage))))
 
 (define-subwidget (main-window the-stage) (make-instance 'qstage))
+
+(define-override (qstage paint-event) (ev)
+  (declare (ignore ev))
+  (with-finalizing ((painter (q+:make-qpainter qstage))
+                    (back (brush (background qstage))))
+    (setf (q+:background painter) back)
+    (q+:erase-rect painter (q+:rect qstage))
+    (q+:save painter)
+    (flare:paint scene painter)
+    (q+:restore painter))
+  (stop-overriding))
+
+(defmethod flare:call-with-translation (func (target qobject) vec)
+  (q+:save target)
+  (unwind-protect
+       (with-finalizing ((point (q+:make-qpointf (vx vec) (vy vec))))
+         (q+:translate target point)
+         (funcall func))
+    (q+:restore target)))
 
 ;;; Controls
 ;;; Here are some buttons used for controls.
