@@ -18,8 +18,8 @@
    (border-width :accessor border-width :initarg :border-width))
   (:documentation "A rectangle.")
   (:default-initargs
-   :background-colour *background-colour*
-   :foreground-colour *text-colour*
+   :background *background-colour*
+   :foreground *text-colour*
    :border-width nil
    :size (vec2 50 50)))
 
@@ -120,7 +120,7 @@
                     (text paintable)))))
 
 ;;; Flare
-(defmethod flare:call-with-translation ((func function) (painter painter) vec)
+(defmethod call-with-translation ((func cl:function) painter vec)
   (with-saved-painter-state painter
     (q+:translate painter (vx vec) (vy vec))
     (funcall func)))
