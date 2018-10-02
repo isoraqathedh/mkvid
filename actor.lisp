@@ -3,6 +3,20 @@
 (in-package #:mkvid)
 (in-readtable :qtools)
 
+(defun colour->vector (r g b &optional (a 255))
+  (vec4
+   (coerce r 'single-float)
+   (coerce g 'single-float)
+   (coerce b 'single-float)
+   (coerce a 'single-float)))
+
+(defun vector->qcolor (vect)
+  (q+:make-qcolor
+   (floor (vx vect))
+   (floor (vy vect))
+   (floor (vz vect))
+   (floor (vw vect))))
+
 (defparameter *background-colour* (vec3 0 10 25)
   "The background colour for the stage.")
 (defparameter *text-colour* (vec3 240 240 15)
