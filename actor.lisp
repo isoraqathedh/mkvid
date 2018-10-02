@@ -107,20 +107,20 @@
     (setf (gethash name (actors cast)) (make-instance 'actor))))
 
 ;;; We're painting on `qpainter's, but they don't actually exist in lisp,
-;;; so we're specialising on `qobject's instead.
-(defmethod paint ((paintable rectangle-actor) (target qobject))
+;;; so they're just generic.
+(defmethod paint ((paintable rectangle-actor) target)
   (with-brush-pen-font (target (brush actor) nil nil)
     (q+:fill-rect target
                   (q+:make-qrectf *origin*
                                   (size-of paintable)))))
 
-(defmethod paint ((paintable ellipse-actor) (target qobject))
+(defmethod paint ((paintable ellipse-actor) target)
   (with-finalizing ((brush (q+:make-qbrush (brush paintable)))
                     (pen (q+:make-qpen (pen paintable))))
     (with-brush-pen-font (target brush pen nil)
       (q+:draw-ellipse target *origin* (size paintable)))))
 
-(defmethod paint ((paintable text-actor) (target qobject))
+(defmethod paint ((paintable text-actor) target)
   (with-finalizing ((brush (q+:make-qbrush (brush paintable)))
                     (pen (q+:make-qpen (pen paintable)))
                     (font (q+:make-qfont (font paintable)
