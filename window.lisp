@@ -37,11 +37,12 @@
 (defmethod initialize-instance :after ((qstage qstage) &key &allow-other-keys)
   (setf (q+:fixed-size qstage) (values (stage-width qstage)
                                        (stage-height qstage)))
-  (flare:start (scene qstage))
-  (flare:start (flare:enter
-                (flare:progression-instance
-                 (progression qstage))
-                (scene qstage))))
+  ;; (flare:start (scene qstage))
+  ;; (flare:start (flare:enter
+  ;;               (flare:progression-instance
+  ;;                (progression qstage))
+  ;;               (scene qstage)))
+  )
 
 (define-subwidget (main-window the-stage) (make-instance 'qstage))
 
