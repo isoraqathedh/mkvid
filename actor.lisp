@@ -3,19 +3,73 @@
 (in-package #:mkvid)
 (in-readtable :qtools)
 
-(defun colour->vector (r g b &optional (a 255))
-  (vec4
-   (coerce r 'single-float)
-   (coerce g 'single-float)
-   (coerce b 'single-float)
-   (coerce a 'single-float)))
+(defclass colour () ()
+  (:documentation "A colour."))
 
-(defun vector->qcolor (vect)
-  (q+:make-qcolor
-   (floor (vx vect))
-   (floor (vy vect))
-   (floor (vz vect))
-   (floor (vw vect))))
+(defclass 3-colour (colour)
+  ((r :initarg :r)
+   (g :initarg :g)
+   (b :initarg :b))
+  (:default-initargs
+   :r 0 :g 0 :b 0))
+
+(defclass 4-colour (3-colour)
+  ((a :initarg :a))
+  (:default-initargs
+   :a 255))
+
+(defmethod print-object ((thing 3-colour) stream)
+  (print-unreadable-object (thing stream :type t)
+    (with-slots-bound (thing 3-colour)
+      (format stream "#~2,'0x~2,'0x~2,'0x" r g b))))
+
+(defmethod print-object ((thing 4-colour) stream)
+  (print-unreadable-object (thing stream :type t)
+    (with-slots (r g b a) thing
+      (format stream "#~2,'0x~2,'0x~2,'0x~2,'0x" r g b a))))
+
+(defgeneric ->colour (thing &optional g b a)
+  (:method ((thing vec3) &optional i1 i2 i3)
+    (declare (ignore i1 i2 i3))
+    (make-instance '3-colour :r (floor (* 255 (vx thing)))
+                             :g (floor (* 255 (vy thing)))
+                             :b (floor (* 255 (vz thing)))))
+  (:method ((thing vec4) &optional i1 i2 i3)
+    (declare (ignore i1 i2 i3))
+    (make-instance '4-colour :r (floor (* 255 (vx thing)))
+                             :g (floor (* 255 (vy thing)))
+                             :b (floor (* 255 (vz thing)))
+                             :a (floor (* 255 (vw thing)))))
+  (:method ((r number) &optional (g 0) (b 0) (a 255 alpha-supplied-p))
+    (if alpha-supplied-p
+        (make-instance '4-colour :r r :g g :b b :a a)
+        (make-instance '3-colour :r r :g g :b b)))
+  (:method ((colour-code string) &optional i1 i2 i3)
+    (declare (ignore i1 i2 i3))
+    (setf colour-code (delete-if-not #'alphanumericp colour-code))
+    (ecase (length colour-code)
+      (6 (make-instance
+          '3-colour
+          :r (parse-integer colour-code :start 0 :end 2 :radix 16)
+          :g (parse-integer colour-code :start 2 :end 4 :radix 16)
+          :b (parse-integer colour-code :start 4 :end 6 :radix 16)))
+      (8 (make-instance
+          '4-colour
+          :r (parse-integer colour-code :start 0 :end 2 :radix 16)
+          :g (parse-integer colour-code :start 2 :end 4 :radix 16)
+          :b (parse-integer colour-code :start 4 :end 6 :radix 16)
+          :a (parse-integer colour-code :start 6 :end 8 :radix 16))))))
+
+(defgeneric ->qcolour (thing)
+  (:method ((thing 3-colour))
+    (q+:make-qcolor (slot-value thing 'r)
+                    (slot-value thing 'g)
+                    (slot-value thing 'b)))
+  (:method ((thing 4-colour))
+    (q+:make-qcolor (slot-value thing 'r)
+                    (slot-value thing 'g)
+                    (slot-value thing 'b)
+                    (slot-value thing 'a))))
 
 (defparameter *background-colour* (vec3 0 10 25)
   "The background colour for the stage.")
