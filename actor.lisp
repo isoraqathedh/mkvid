@@ -20,7 +20,7 @@
 
 (defmethod print-object ((thing 3-colour) stream)
   (print-unreadable-object (thing stream :type t)
-    (with-slots-bound (thing 3-colour)
+    (with-slots (r g b) thing
       (format stream "#~2,'0x~2,'0x~2,'0x" r g b))))
 
 (defmethod print-object ((thing 4-colour) stream)
