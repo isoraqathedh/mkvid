@@ -114,40 +114,6 @@
              :initform nil
              :initarg :contents)))
 
-(defmacro with-saved-painter-state (painter &body body)
-  "Save the painter state, execute BODY, then restore it."
-  `(progn
-     (q+:save ,painter)
-     ,@body
-     (q+:restore ,painter)))
-
-(defmacro with-brush-pen-font ((painter brush pen font) &body body)
-  `(with-saved-painter-state ,painter
-     ;; Let new setup
-     (when ,brush
-       (setf (q+ brush ,painter) ,brush))
-     (when ,pen
-       (setf (q+ pen ,painter) ,pen))
-     (when ,font
-       (setf (q+ font ,painter) ,font))
-     ;; Main stuff
-     ,@body))
-
-(defun text-actor (painter position text
-                   &key brush pen font include-box alignment)
-  (with-brush-pen-font (painter brush pen font)
-    (when include-box
-      (q+:draw-rect painter position))
-    (q+:draw-text painter position alignment text)))
-
-(defun circle-actor (painter position size &key brush pen)
-  (with-brush-pen-font (painter brush pen nil)
-    (q+:draw-ellipse painter position size size)))
-
-(defun rectangle-actor (painter rectangle &key brush)
-  (with-brush-pen-font (painter brush nil nil)
-    (q+:fill-rect painter rectangle brush)))
-
 ;;; Casts are a list of actors.
 ;;; but maybe Flare's `scene' is what we need.
 (defclass cast ()
@@ -159,36 +125,3 @@
   (:documentation "Ensure the actor NAME exists and has an actor associated with it.")
   (:method ((cast-list cast) (name symbol))
     (setf (gethash name (actors cast)) (make-instance 'actor))))
-
-;;; We're painting on `qpainter's, but they don't actually exist in lisp,
-;;; so they're just generic.
-(defmethod paint ((paintable rectangle-actor) target)
-  (with-brush-pen-font (target (brush actor) nil nil)
-    (q+:fill-rect target
-                  (q+:make-qrectf *origin*
-                                  (size-of paintable)))))
-
-(defmethod paint ((paintable ellipse-actor) target)
-  (with-finalizing ((brush (q+:make-qbrush (brush paintable)))
-                    (pen (q+:make-qpen (pen paintable))))
-    (with-brush-pen-font (target brush pen nil)
-      (q+:draw-ellipse target *origin* (size paintable)))))
-
-(defmethod paint ((paintable text-actor) target)
-  (with-finalizing ((brush (q+:make-qbrush (brush paintable)))
-                    (pen (q+:make-qpen (pen paintable)))
-                    (font (q+:make-qfont (font paintable)
-                                         (font-size paintable))))
-    (with-brush-pen-font (target brush pen font)
-      (when (include-box paintable)
-        (call-next-method))
-      (q+:draw-text target
-                    *origin*
-                    (alignment paintable)
-                    (text paintable)))))
-
-;;; Flare
-(defmethod call-with-translation ((func cl:function) painter vec)
-  (with-saved-painter-state painter
-    (q+:translate painter (vx vec) (vy vec))
-    (funcall func)))
