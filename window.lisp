@@ -152,3 +152,6 @@
 (defun main ()
   (with-main-window (w 'main-window)
     (setf (q+ window-title w) "mkvid")))
+
+(defun present (name)
+  (with-main-window (w name)))
