@@ -30,18 +30,18 @@
                 :reader progression)
    (scene :initform (make-instance 'flare:scene)
           :reader scene)
-   (background :initform (vec 0 0 0)
+   (background :initform (->colour 0 0 30)
                :accessor background))
   (:documentation "A stage where all activity will be recorded."))
 
 (defmethod initialize-instance :after ((qstage qstage) &key &allow-other-keys)
   (setf (q+:fixed-size qstage) (values (stage-width qstage)
                                        (stage-height qstage)))
-  ;; (flare:start (scene qstage))
-  ;; (flare:start (flare:enter
-  ;;               (flare:progression-instance
-  ;;                (progression qstage))
-  ;;               (scene qstage)))
+  (flare:start (scene qstage))
+  (flare:start (flare:enter
+                (flare:progression-instance
+                 (progression qstage))
+                (scene qstage)))
   )
 
 (define-subwidget (main-window the-stage) (make-instance 'qstage))
@@ -154,4 +154,5 @@
     (setf (q+ window-title w) "mkvid")))
 
 (defun present (name)
-  (with-main-window (w name)))
+  (with-main-window (w name)
+    (setf (q+ window-title w) "mkvid")))

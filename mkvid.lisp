@@ -1,150 +1,171 @@
-;;;; mkvid.lisp
-
+;;;; main test file (copied from shin)
 (in-package #:mkvid)
 (in-readtable :qtools)
 
-(defgeneric relative (window axis value)
-  (:documentation "Convert relative coordinates to an absolute one.
+(define-widget canvas (QWidget)
+  ((progression :initarg :progression :reader progression)
+   (scene :initform (make-instance 'flare:scene) :reader scene)
+   (background :initform *background-colour* :accessor background)))
 
-Relative coordinates are those that set 1 to the far edge of the stage
-\(bottom and right\).
-As such 1 unit in the x direction is not necessarily
-the same as 1 unit in the y direction.
+(defmethod initialize-instance :after ((canvas canvas) &key width height)
+  (setf (q+:fixed-size canvas) (values width height))
+  (flare:start (scene canvas))
+  (flare:start (flare:enter (flare:progression-instance (progression canvas)) (scene canvas))))
 
-This function can only convert one direction at any one time.
-AXIS indicates which axis to convert with (:RX or :RY),
-and VALUE is the method to change.")
-  (:method ((window qstage) (axis (eql :rx)) value)
-    (* (stage-width window) value))
-  (:method ((window qstage) (axis (eql :ry)) value)
-    (* (stage-height window) value)))
+(define-subwidget (canvas timer) (q+:make-qtimer canvas)
+  (setf (q+:single-shot timer) NIL)
+  (q+:start timer (round 1000/30)))
 
-;; Helper functions for `%coordinates'
-(defun arg-x (x y)
-  (declare (ignore y))
-  x)
+(define-slot (canvas update) ()
+  (declare (connected timer (timeout)))
+  (flare:update (scene canvas))
+  (q+:repaint canvas))
 
-(defun arg-y (x y)
-  (declare (ignore x))
-  y)
+(define-override (canvas paint-event) (ev)
+  (declare (ignore ev))
+  (with-finalizing ((painter (q+:make-qpainter canvas))
+                    (back (brush (background canvas))))
+    (setf (q+:background painter) back)
+    (q+:erase-rect painter (q+:rect canvas))
+    (q+:save painter)
+    (flare:paint scene painter)
+    (q+:restore painter))
+  (stop-overriding))
 
-(defgeneric %coordinates (window x y rx ry output)
-  (:method ((window qstage) x y rx ry output)
-    (let ((final-x (+ x (relative window :rx rx)))
-          (final-y (+ y (relative window :ry ry))))
-     (etypecase output
-       ((eql :x) final-x)
-       ((eql :y) final-y)
-       (function (funcall output final-x final-y))))))
+(defmethod flare:call-with-translation (func (target qobject) vec)
+  (q+:save target)
+  (unwind-protect
+       (with-finalizing ((point (q+:make-qpointf (vx vec) (vy vec))))
+         (q+:translate target point)
+         (funcall func))
+    (q+:restore target)))
 
-(defgeneric coordinates (window &key x y rx ry output)
-  (:documentation "Create a point.
+(defmacro define-presentation (name (width height &rest initargs) &body intervals)
+  `(progn
+     (define-widget ,name (QWidget canvas)
+       ()
+       (:default-initargs
+         :progression ',name
+         :width ,width
+         :height ,height
+         ,@initargs))
+     (flare:define-progression ,name
+       ,@intervals)))
 
-The point is defined by a combination of relative and absolute coordinates.
-Relative coordinates set 1 to be the far edge of the stage (bottom and right),
-whereas absolute coordinates set 1 to 1 pixel in size.
-The argument OUTPUT indicates what output value is desired:
-use the keyword :X to output the X coordinate,
-the keyword :Y to output the Y coordinate,
-or use a function to call that function with those two coordinates.")
-  (:method ((window qstage) &key (x 0) (y 0) (rx 0) (ry 0) (output #'cons))
-    (%coordinates window x y rx ry output)))
+(defun present (name)
+  (with-main-window (w name)))
 
-(defvar *origin* (q+:make-qpointf 0 0)
-  "The origin value.")
+;;; actors and painting
+(defclass entity (flare:entity)
+  ((flare:location :accessor location)))
 
-(defgeneric offset-box (rectangle coordinates-as-cons)
-  (:method (rectangle (coordinates cons))
-    (q+:translate rectangle (car coordinates) (cdr coordinates))
-    rectangle))
+(defgeneric paint (thing painter)
+  (:method-combination progn))
 
-(defun rectangle (stage type
-                  &key (left-a     0 lap)  (top-a      0 tap)
-                       (width-a    0 wap)  (height-a   0 hap)
-                       (bottom-a   0 bap)  (right-a    0 rap)
-                       (left-r     0 lrp)  (top-r      0 trp)
-                       (width-r    0 wrp)  (height-r   0 hrp)
-                       (bottom-r   0 brp)  (right-r    0 rrp)
-                       (anchor-x-a 0 axap) (anchor-y-a 0 ayap)
-                       (anchor-x-r 0 axrp) (anchor-y-r 0 ayrp)
-                       (prop-x-a   0 pxap) (prop-y-a   0 pyap)
-                       (prop-x-r   0 pxrp) (prop-y-r   0 pyrp))
-  "Create a rectangle.
+(defgeneric rect (rectangle))
 
-TYPE indicates the type of vertices that are provided:
+(defmethod paint progn ((entity entity) painter))
 
-- :FREE --
-  Here, the user provides a top-left (via top and left)
-  and a either a size (height and width)
-  or a bottom-right corner (via bottom and right).
-- :CENTRED --
-  Here, provide a size (height and width).
-  The rectangle will be centred with the stage.
-- :ANCHORED --
-  Provide a size (height and width), and also an anchor point (anchor)
-  and a proportion (prop).
-  The rectangle would be the size provided,
-  and the point given in anchor would be the given proportion of the way
-  across the rectangle.
-  For instance, this option can specify a (size =) 1/3 by 1/3 rectangle
-  where the centre of the stage (anchor = 1/2, 1/2)
-  is 40% of the way across the x-axis
-  and 60% of the way across the y-axis (prop = 2/5, 3/5).
+(defmethod flare:paint ((entity entity) target)
+  (flare:with-translation ((location entity) target)
+    (paint entity target)))
 
-Any item provided but not required will be ignored."
-  (declare (ignore tap rap lrp trp rrp))
-  (let ((size
-          (apply #'coordinates stage
-                 :output #'q+:make-qsizef
-                 (cond ((or wrp hrp wap hap)
-                        (list :x width-a
-                              :y height-a
-                              :rx width-r
-                              :ry height-r))
-                       ((or brp lap bap lap)
-                        (list :x (- right-a left-a)
-                              :y (- bottom-a top-a)
-                              :rx (- right-r left-r)
-                              :ry (- bottom-r top-r)))
-                       (t nil)))))
-    (q+:make-qrectf
-     (case type
-       (:free
-        (coordinates stage :x left-a :y top-a
-                            :rx left-r :ry top-r
-                            :output #'q+:make-qpointf))
-       (:centred
-        ;; (assuming relative coordinates)
-        ;; A centred rectangle has the top left corner at:
-        ;; (1/2 - w/2, 1/2 - h/2).
-        (coordinates stage
-                     :rx (- 1/2 (* width-r 1/2)) :ry (- 1/2 (* height-r 1/2))
-                     :x (- (* width-a 1/2)) :y (- (* height-a 1/2))
-                     :output #'q+:make-qpointf))
-       (:anchored
-        ;; In general, with an anchor at (a, b)
-        ;; and the required anchor at (p, q)
-        ;; (where p = 0 means the left edge of the rectangle
-        ;; and p = 1 means the right edge of the rectangle)
-        ;; the top-left corner is at (a - wp, b - hq),
-        ;; and the bottom-right corner is at (a + (1-w)p, b + (1-h)q).
+(defclass sized-entity (entity)
+  ((size :initarg :size :accessor size))
+  (:default-initargs
+   :size (vec 50 50)))
 
-        ;; To make things simple, we require the provided values
-        ;; to be all-relative or all-absolute.
-        (cond ((or axap ayap pxap pyap)
-               (coordinates stage
-                            :rx (- anchor-x-r prop-x-a)
-                            :ry (- anchor-y-r prop-y-a)
-                            :x  (- anchor-x-a prop-x-a)
-                            :y  (- anchor-y-a prop-y-a)
-                            :output #'q+:make-qpointf))
-              ((or axrp ayrp pxrp pyrp)
-               (coordinates stage
-                            :rx (- anchor-x-r (* width-r  prop-x-r))
-                            :ry (- anchor-y-r (* height-r prop-y-r))
-                            :x  (- anchor-x-a (* width-a  prop-x-r))
-                            :y  (- anchor-y-a (* height-a prop-y-r))
-                            :output #'q+:make-qpointf))
-              (t (error "Anchors and sizes must be both ~
-relative or both absolute.")))))
-     size)))
+(defclass box (sized-entity)
+  ((background :initarg :background :accessor background)
+   (border :initarg :border :accessor border))
+  (:default-initargs
+   :background (->colour 0 0 0 0)
+   :border (cons (vec 0 0 0 0) (->colour 0 0 0))))
+
+(defmethod rect ((rect vec4))
+  (q+:make-qrectf (coerce (vx rect) 'single-float)
+                  (coerce (vy rect) 'single-float)
+                  (coerce (vz rect) 'single-float)
+                  (coerce (vw rect) 'single-float)))
+
+(defmethod rect ((rect vec2))
+  (q+:make-qrectf 0.0 0.0
+                  (coerce (vx rect) 'single-float)
+                  (coerce (vy rect) 'single-float)))
+
+(defgeneric brush (colour)
+  (:method ((colour colour))
+    (q+:make-qbrush (->qcolor colour))))
+
+(defun fill-rect (painter brush rect)
+  (with-finalizing ((rect (rect rect)))
+    (q+:fill-rect painter rect brush)))
+
+(defmethod paint progn ((box box) painter)
+  (let ((size (size box)))
+    (destructuring-bind (offset . color) (border box)
+      (with-finalizing ((brush (brush color)))
+        (fill-rect painter brush (vec (- (vw offset))
+                                      (- (vx offset))
+                                      (+ (vx size) (vw offset) (vy offset))
+                                      (vx offset)))
+        (fill-rect painter brush (vec (vx size)
+                                      (- (vx offset))
+                                      (vy offset)
+                                      (+ (vy size) (vx offset) (vz offset))))
+        (fill-rect painter brush (vec (- (vw offset))
+                                      (vy size)
+                                      (+ (vx size) (vw offset) (vy offset))
+                                      (vz offset)))
+        (fill-rect painter brush (vec (- (vw offset))
+                                      (- (vx offset))
+                                      (vw offset)
+                                      (+ (vy size) (vx offset) (vz offset))))))
+    (with-finalizing ((brush (brush (background box))))
+      (fill-rect painter brush (vec 0 0 (vx size) (vy size))))))
+
+(defclass text (sized-entity)
+  ((text :initarg :text :accessor text)
+   (color :initarg :font-color :accessor font-color)
+   (font-size :initarg :font-size :accessor font-size)
+   (font :initarg :font :accessor font)
+   (alignment :initarg :align :accessor alignment))
+  (:default-initargs
+   :text "< >"
+   :font "Inziu Iosevka TC"
+   :font-size -1
+   :font-color (->colour 240 240 0 255)
+   :align (cons :center :center)))
+
+(defmethod paint progn ((text text) painter)
+  (with-finalizing ((brush (brush (font-color text)))
+                    (rect (rect (size text)))
+                    (font (q+:make-qfont (font text)
+                                         (font-size text)))
+                    (option (q+:make-qtextoption
+                             (logior (ecase (car (alignment text))
+                                       (:left (q+:qt.align-left))
+                                       (:right (q+:qt.align-right))
+                                       (:center (q+:qt.align-hcenter))
+                                       (:justify (q+:qt.align-justify)))
+                                     (ecase (cdr (alignment text))
+                                       (:top (q+:qt.align-top))
+                                       (:bottom (q+:qt.align-bottom))
+                                       (:center (q+:qt.align-vcenter)))))))
+    (setf (q+:brush painter) brush
+          (q+:font painter) font)
+    (q+:draw-text painter rect (text text) option)))
+
+(defclass textbox (box text)
+  ())
+
+(define-presentation test (800 600)
+  1 1 (T (flare:enter textbox :border (cons (vec 3 3 3 3) (->colour 240 0 0))
+                              :location (vec 400 300)
+                              :text "Test"
+                              :font-color *text-colour*
+                              :font-size 10
+                              :size (vec 100 30)
+                              :name :box))
+  0 T (:box (flare:calc location :to (vec (+ 400 (* 200 (sin flare:clock)))
+                                          (+ 300 (* 200 (sin (* 3/5 flare:clock))))))))

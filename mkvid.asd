@@ -8,6 +8,5 @@
   :serial t
   :depends-on (#:qtools #:qtcore #:qtgui #:flare #:3d-vectors)
   :components ((:file "package")
-               (:file "window")
-               (:file "actor")
+               (:file "colours")
                (:file "mkvid")))

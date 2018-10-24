@@ -1,5 +1,3 @@
-;;;; actor.lisp
-
 (in-package #:mkvid)
 (in-readtable :qtools)
 
@@ -29,6 +27,13 @@
       (format stream "#~2,'0x~2,'0x~2,'0x~2,'0x" r g b a))))
 
 (defgeneric ->colour (thing &optional g b a)
+  (:documentation "Make an intermediate colour representation.
+
+The input representation can either be a hex code
+with either 6 (#ABCDEF) or 8 (#ABCDEF89) digits for the alpha channel,
+a vec3 or vec4 with numbers scaled from 0 (no input) to 1 (full input),
+or provided directly with four integers either separately or in a list
+for values in the red, green, blue and optionally alpha sequence.")
   (:method ((thing vec3) &optional i1 i2 i3)
     (declare (ignore i1 i2 i3))
     (make-instance '3-colour :r (floor (* 255 (vx thing)))
@@ -40,6 +45,12 @@
                              :g (floor (* 255 (vy thing)))
                              :b (floor (* 255 (vz thing)))
                              :a (floor (* 255 (vw thing)))))
+  (:method ((thing list) &optional i1 i2 i3)
+    (declare (ignore i1 i2 i3))
+    (destructuring-bind (r g b &optional (a nil a-supplied-p)) thing
+      (if a-supplied-p
+          (make-instance '4-colour :r r :g g :b b :a a)
+          (make-instance '3-colour :r r :g g :b b))))
   (:method ((r number) &optional (g 0) (b 0) (a 255 alpha-supplied-p))
     (if alpha-supplied-p
         (make-instance '4-colour :r r :g g :b b :a a)
@@ -60,68 +71,19 @@
           :b (parse-integer colour-code :start 4 :end 6 :radix 16)
           :a (parse-integer colour-code :start 6 :end 8 :radix 16))))))
 
-(defgeneric ->qcolour (thing)
+(defgeneric ->qcolor (thing)
+  (:documentation "Create a qcolor from the intermediate colour representation.")
   (:method ((thing 3-colour))
-    (q+:make-qcolor (slot-value thing 'r)
-                    (slot-value thing 'g)
-                    (slot-value thing 'b)))
+    (q+:make-qcolor (floor (slot-value thing 'r))
+                    (floor (slot-value thing 'g))
+                    (floor (slot-value thing 'b))))
   (:method ((thing 4-colour))
-    (q+:make-qcolor (slot-value thing 'r)
-                    (slot-value thing 'g)
-                    (slot-value thing 'b)
-                    (slot-value thing 'a))))
+    (q+:make-qcolor (floor (slot-value thing 'r))
+                    (floor (slot-value thing 'g))
+                    (floor (slot-value thing 'b))
+                    (floor (slot-value thing 'a)))))
 
-(defparameter *background-colour* (vec3 0 10 25)
+(defparameter *background-colour* (->colour 0 10 25)
   "The background colour for the stage.")
-(defparameter *text-colour* (vec3 240 240 15)
+(defparameter *text-colour* (->colour 240 240 15)
   "The foreground colour for the stage.")
-
-(defclass actor (flare:particle)
-  ()
-  (:documentation "A single object that can move around in the stage. "))
-
-(defclass rectangle-actor (actor flare:sized-entity)
-  ((background-colour :accessor background-colour :initarg :background)
-   (foreground-colour :accessor foreground-colour :initarg :foreground)
-   (border-width :accessor border-width :initarg :border-width))
-  (:documentation "A rectangle.")
-  (:default-initargs
-   :background *background-colour*
-   :foreground *text-colour*
-   :border-width nil
-   :size (vec2 50 50)))
-
-(defclass text-actor (rectangle-actor)
-  ((text :accessor text :initarg :text)
-   (alignment :accessor alignment :initarg :alignment)
-   (font :accessor font :initarg :font)
-   (font-size :accessor font-size :initarg :font-size)
-   (include-box :accessor include-box :initarg :include-box))
-  (:documentation "A rectangle with text.")
-  (:default-initargs
-   :size nil
-   :text "(...)"
-   :alignment 0
-   :font "sans-serif"
-   :font-size 15
-   :include-box nil))
-
-(defclass ellipse-actor (rectangle-actor)
-  ())
-
-(defclass group-actor (actor)
-  ((contents :accessor contents
-             :initform nil
-             :initarg :contents)))
-
-;;; Casts are a list of actors.
-;;; but maybe Flare's `scene' is what we need.
-(defclass cast ()
-  ((actors :accessor actors
-           :initform (make-hash-table)))
-  (:documentation "Container for a list of actors in a scene."))
-
-(defgeneric %define-actor (cast-list name)
-  (:documentation "Ensure the actor NAME exists and has an actor associated with it.")
-  (:method ((cast-list cast) (name symbol))
-    (setf (gethash name (actors cast)) (make-instance 'actor))))
