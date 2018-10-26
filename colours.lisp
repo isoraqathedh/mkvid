@@ -83,6 +83,53 @@ for values in the red, green, blue and optionally alpha sequence.")
                     (floor (slot-value thing 'b))
                     (floor (slot-value thing 'a)))))
 
+;;; colour palette stuff
+(defclass colour-palette ()
+  ((palette :initform (make-hash-table))
+   (default :initform (->colour 255 0 255)
+            :accessor default-colour))
+  (:documentation "A colour palette for named colours."))
+
+(defmethod print-object ((object colour-palette) stream)
+  (print-unreadable-object (object stream :type t :identity t)
+    (format stream ":LENGTH ~d :DEFAULT ~a"
+            (hash-table-count (slot-value object 'palette))
+            (default-colour object))))
+
+(defgeneric get-colour (palette name)
+  (:method ((palette colour-palette) name)
+    (gethash name (slot-value palette 'palette)
+             (default-colour palette))))
+
+(defgeneric (setf get-colour) (value palette name)
+  (:method (value (palette colour-palette) name)
+    (setf (gethash name (slot-value palette 'palette)) value)))
+
+(defgeneric delete-colour (palette name)
+  (:method ((palette colour-palette) name)
+    (remhash name (gethash name (slot-value palette 'palette)))))
+
+(defmacro define-palette (&body args)
+  (let ((palette (gensym "PALETTE")))
+   `(let ((,palette (make-instance 'colour-palette)))
+      (prog1 ,palette
+        ,@(loop for (name . colour-arguments) in args
+                collect (case name
+                          ((t)
+                           `(setf (default-colour ,palette)
+                                      (->colour ,@colour-arguments)))
+                          ((nil)
+                           `(setf (default-colour ,palette) nil))
+                          (t
+                           `(setf (get-colour ,palette ',name)
+                                    (->colour ,@colour-arguments)))))))))
+
+(defvar *palette*
+  (define-palette
+    (:foreground 240 240 15)
+    (:background 0 10 25))
+  "The current palette. Can be rebound to ")
+
 (defparameter *background-colour* (->colour 0 10 25)
   "The background colour for the stage.")
 (defparameter *text-colour* (->colour 240 240 15)
