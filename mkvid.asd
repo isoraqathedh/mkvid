@@ -9,4 +9,7 @@
   :depends-on (#:qtools #:qtcore #:qtgui #:flare #:3d-vectors)
   :components ((:file "package")
                (:file "colours")
+               (:file "coordinates")
+               (:file "window")
+               (:file "actor")
                (:file "mkvid")))
