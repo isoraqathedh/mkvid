@@ -18,7 +18,6 @@
    #:objects
    #:tween
    #:slot-tween
-   #:slot
    #:originals
    #:original-value
    #:range-tween
