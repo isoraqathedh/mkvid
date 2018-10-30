@@ -11,6 +11,10 @@
                         :font-size 20
                         :size (vec 150 40)
                         :name :box)
+         (enter image-actor :image-file (asdf:system-relative-pathname 'mkvid "sprite-test" :type "png")
+                            :size (vec 100 100)
+                            :location (vec (rx 1/2) (ry 1/2))
+                            :name :coin)
          (enter textbox :border (cons (vec 0 0 0 0) (->colour 0 0 0 0))
                         :location (vec (rx 1/4) (ry 4/10))
                         :size (vec (rx 5/8) (ry 2/10))
@@ -43,10 +47,12 @@
                      :background *text-colour*
                      :name :station-oval)
          (enter box :location (vec (rx 1/8) 0)
-                          :size (vec 30 (ry 1))
-                          :name :band
-                          :background (->colour 60 120 15)))
+                    :size (vec 30 (ry 1))
+                    :name :band
+                    :background (->colour 60 120 15)))
   0 T (:box (calc location :to (let ((clk clock))
                                        (vec (+ 400 (* 200 (sin clk)))
                                             (+ 300 (* 200 (sin (* 3/5 clk)))))))
-            (calc text :to (format nil "t = ~d" (floor clock)))))
+            (calc text :to (format nil "~,2,,'#,'0f s" clock)))
+  0 40 (:coin (calc sprite-location :to (vec (floor (mod (* clock 30) 10)) 0)))
+  40 40 (:coin (leave)))

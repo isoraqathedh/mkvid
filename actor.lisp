@@ -158,13 +158,13 @@
         (q+:make-qpixmap (namestring image-file))))
 
 (defmethod paint progn ((image-actor image-actor) painter)
-  (let ((sprite-width (vx (size image-actor)))
-        (sprite-height (vy (size image-actor))))
+  (let ((sprite-width (floor (vx (size image-actor))))
+        (sprite-height (floor (vy (size image-actor)))))
     (q+:draw-pixmap
      painter
-     0 0                                      ; location
-     sprite-width sprite-height               ; drawing rectangle size
-     (qpixmap-of image-actor)                 ; image
+     0 0                                ; location
+     sprite-width sprite-height         ; drawing rectangle size
+     (qpixmap-of image-actor)           ; image
      ;; The location of the sprite
      ;; We'll take the size of the sprite as the size of the actor,
      ;; and then take the vxth column of the vyth row
@@ -173,10 +173,9 @@
                (vx (size image-actor))))
      (floor (* (vy (sprite-location image-actor))
                (vy (size image-actor))))
-     sprite-width sprite-height         ; sprite rectangle size
-     )))
+     sprite-width sprite-height)))  ; sprite rectangle size
 
-(defmethod flare:leave :after ((unit image-actor) scene-graph)
+(defmethod leave :after ((unit image-actor) scene-graph)
   (declare (ignore scene-graph))
   ;; Need to clean up the qpixmap after the actor leaves
   ;; as it's basically impossible to access the actor after leaving
