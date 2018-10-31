@@ -125,24 +125,18 @@ for values in the red, green, blue and optionally alpha sequence.")
 
 (defmacro define-palette (&body args)
   (let ((palette (gensym "PALETTE")))
-   `(let ((,palette (make-instance 'colour-palette)))
-      (prog1 ,palette
-        ,@(loop for (name . colour-arguments) in args
-                collect (case name
-                          ((t)
-                           `(setf (default-colour ,palette)
-                                      (->colour ,@colour-arguments)))
-                          ((nil)
-                           `(setf (default-colour ,palette) nil))
-                          (t
-                           `(setf (get-colour ,palette ',name)
-                                    (->colour ,@colour-arguments)))))))))
-
-(defvar *palette*
-  (define-palette
-    (:foreground 240 240 15)
-    (:background 0 10 25))
-  "The current palette. Can be rebound to ")
+    `(let ((,palette (make-instance 'colour-palette)))
+       (prog1 ,palette
+         ,@(loop for (name . colour-arguments) in args
+                 collect (case name
+                           ((t)
+                            `(setf (default-colour ,palette)
+                                   (->colour ,@colour-arguments)))
+                           ((nil)
+                            `(setf (default-colour ,palette) nil))
+                           (t
+                            `(setf (get-colour ,palette ',name)
+                                   (->colour ,@colour-arguments)))))))))
 
 (defparameter *background-colour* (->colour 0 10 25)
   "The background colour for the stage.")
