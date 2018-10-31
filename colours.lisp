@@ -83,6 +83,20 @@ for values in the red, green, blue and optionally alpha sequence.")
                     (floor (slot-value thing 'b))
                     (floor (slot-value thing 'a)))))
 
+;;; tweening stuff
+(defmethod flare:ease-object ((from 3-colour) (to 3-colour) x by)
+  (->colour
+   (flare:ease x by (slot-value from 'r) (slot-value to 'r))
+   (flare:ease x by (slot-value from 'g) (slot-value to 'g))
+   (flare:ease x by (slot-value from 'b) (slot-value to 'b))))
+
+(defmethod flare:ease-object ((from 4-colour) (to 4-colour) x by)
+  (->colour
+   (flare:ease x by (slot-value from 'r) (slot-value to 'r))
+   (flare:ease x by (slot-value from 'g) (slot-value to 'g))
+   (flare:ease x by (slot-value from 'b) (slot-value to 'b))
+   (flare:ease x by (slot-value from 'a) (slot-value to 'a))))
+
 ;;; colour palette stuff
 (defclass colour-palette ()
   ((palette :initform (make-hash-table))
