@@ -5,8 +5,7 @@
 (define-widget canvas (QWidget)
   ((progression :initarg :progression :reader progression)
    (scene :initform (make-instance 'flare:scene) :reader scene)
-   (background :initform *background-colour* :accessor background)
-   (palette :initform *palette* :accessor palette)))
+   (background :initform *background-colour* :accessor background)))
 
 (defmethod initialize-instance :after ((canvas canvas) &key width height)
   (setf (q+:fixed-size canvas) (values width height))
