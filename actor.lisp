@@ -175,17 +175,37 @@
                (vy (size image-actor))))
      sprite-width sprite-height)))  ; sprite rectangle size
 
-(defmethod leave :after ((unit image-actor) scene-graph)
+(defmethod flare:leave :after ((unit image-actor) scene-graph)
   (declare (ignore scene-graph))
   ;; Need to clean up the qpixmap after the actor leaves
   ;; as it's basically impossible to access the actor after leaving
   ;; we'll declare it dead and just finalize the thing.
   (finalize (qpixmap-of unit)))
 
-;;; Stepper actor
-;;; a stepper actor has a number of "masks" (steps)
-;;; that can be stepped through.
+;;; Group actor
+;;; a formation that join two or more actors.
+(defclass group-actor (flare:container-unit)
+  ((locations :accessor locations :initarg :locations))
+  (:default-initargs
+   :locations (list (vec 0 0))))
 
-;;; Blinkenlights actor
-;;; a single actor that controls an array of lights;
-;;; can be used to switch on or off a list of available things.
+(defmethod paint progn ((group-actor group-actor) painter)
+  (flare:do-container-tree (actor group-actor)
+    (paint actor painter)))
+
+(defmethod flare:update :after ((group-actor group-actor))
+  (for:for ((actor flare-queue:in-queue (objects group-actor))
+            (offset in (locations group-actor)))
+    (setf (location actor) (v+ (location group-actor) offset))))
+
+;;; Shifter actor
+;;; a group actor that allows its members to shift position one after another
+;;; in a "musical chairs" kind of way.
+(defclass shifter-actor (group-actor) ())
+
+(defgeneric shift-actors (shifter-actor)
+  (:method ((shifter-actor shifter-actor))
+    (let ((top (pop (locations shifter-actor))))
+      (setf (locations shifter-actor)
+            (nconc (locations shifter-actor)
+                   (list top))))))
