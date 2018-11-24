@@ -197,9 +197,11 @@
     (paint actor painter)))
 
 (defmethod flare:update :after ((group-actor group-actor))
+(defmethod (setf location) :after (value (group-actor group-actor))
+  (declare (ignore value))
   (for:for ((actor flare-queue:in-queue (objects group-actor))
-            (offset in (locations group-actor)))
-    (setf (location actor) (v+ (location group-actor) offset))))
+            (actor-offset in (locations group-actor)))
+    (setf (location actor) (v+ actor-offset (location group-actor)))))
 
 ;;; Shifter actor
 ;;; a group actor that allows its members to shift position one after another
