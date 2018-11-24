@@ -123,7 +123,7 @@
                     (pen (pen (font-color text)))
                     (rect (rect (size text)))
                     (font (q+:make-qfont (font text)
-                                         (font-size text)))
+                                         (round (font-size text))))
                     (option (q+:make-qtextoption
                              (logior (ecase (car (alignment text))
                                        (:left (q+:qt.align-left))
