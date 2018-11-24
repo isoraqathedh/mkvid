@@ -185,9 +185,12 @@
 ;;; Group actor
 ;;; a formation that join two or more actors.
 (defclass group-actor (flare:container-unit)
-  ((locations :accessor locations :initarg :locations))
+  ((locations :accessor locations :initarg :locations)
+   (location :accessor location :initarg :location))
   (:default-initargs
-   :locations (list (vec 0 0))))
+   :locations nil
+   :location (vec 0 0)))
+
 
 (defmethod paint progn ((group-actor group-actor) painter)
   (flare:do-container-tree (actor group-actor)
