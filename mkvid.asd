@@ -8,6 +8,7 @@
   :serial t
   :depends-on (#:qtools #:qtcore #:qtgui #:flare #:3d-vectors)
   :components ((:file "package")
+               (:file "patch") ; temporary patch for flare
                (:file "colours")
                (:file "coordinates")
                (:file "window")
