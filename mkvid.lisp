@@ -51,7 +51,6 @@
             :name :coin))
   (:station-label (enter textbox
                          :border (cons (vec 0 0 0 0) (->colour 0 0 0 0))
-                         :location (vec (rx 1/4) (ry 4/10))
                          :size (vec (rx 5/8) (ry 2/10))
                          :align (cons :left :center)
                          :text "London King's Cross"
@@ -59,9 +58,6 @@
                          :background *background-colour*
                          :name :station-code-box)
                   (enter oval
-                         :location (vec (+ (rx 1/8)
-                                           (* 30 1/2))
-                                        (ry 1/2))
                          :size (vec 80 80)
                          :border (cons 15 *background-colour*)
                          :background *text-colour*
