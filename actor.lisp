@@ -186,10 +186,9 @@
 ;;; a formation that join two or more actors.
 (defclass group-actor (flare:container-unit)
   ((locations :accessor locations :initarg :locations)
-   (location :accessor location :initarg :location))
+   (flare:location :accessor location :initarg :location))
   (:default-initargs
-   :locations nil
-   :location (vec 0 0)))
+   :locations nil))
 
 (defgeneric adjust-subactor-positions (group-actor)
   (:method ((group group-actor))
