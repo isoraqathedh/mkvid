@@ -22,9 +22,7 @@
      (enter group-actor
             :location (vec 0 0)
             :locations (list (vec (rx 1/4) (ry 4/10))
-                             (vec (+ (rx 1/8)
-                                     (* 30 1/2))
-                                  (ry 1/2)))
+                             (vec (+ (rx 1/8) (* 30 1/2)) (ry 1/2)))
             :name :station-label)
      (enter aux-data-textbox
             :location (vec (rx 1/20) (ry 17/20))
