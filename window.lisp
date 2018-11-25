@@ -64,6 +64,23 @@
            ,@intervals)))))
 
 ;;; Keybinds
+;; Currently there is no need to do anything elaborate or serious,
+;; just respond to the key presses to the canvas that correspond to some action.
+;; we'll figure something more complex later if we actually need it.
+(define-override (canvas key-press-event) (event)
+  (let ((key (q+:key event))
+        (scene (scene canvas)))
+    (cond
+      ((eql key (q+:qt.Key_Q))
+       (q+:quit qt:*qapplication*))
+      ((eql key (q+:qt.Key_S))
+       (if (flare:running scene)
+           (flare:stop scene)
+           (flare:start scene)))
+      ((eql key (q+:qt.Key_R))
+       (flare:stop scene)
+       (flare:reset scene))
+      (t (stop-overriding)))))
 
 ;;; Main
 (defun present (name)
