@@ -2,6 +2,7 @@
 (in-package #:mkvid)
 (in-readtable :qtools)
 
+;;; Main canvas type that everything hangs on
 (define-widget canvas (QWidget)
   ((progression :initarg :progression :reader progression)
    (scene :initform (make-instance 'flare:scene) :reader scene)
@@ -12,6 +13,9 @@
   (flare:start (scene canvas))
   (flare:start (flare:enter (flare:progression-instance (progression canvas)) (scene canvas))))
 
+;;; (Future) other widgets and layout
+
+;;; Animation
 (define-subwidget (canvas timer) (q+:make-qtimer canvas)
   (setf (q+:single-shot timer) NIL)
   (q+:start timer (round 1000/30)))
@@ -59,6 +63,9 @@
          (flare:define-progression ,name
            ,@intervals)))))
 
+;;; Keybinds
+
+;;; Main
 (defun present (name)
   (with-main-window (w name)
     (setf (q+:window-title w)

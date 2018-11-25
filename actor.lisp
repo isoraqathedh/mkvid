@@ -214,6 +214,7 @@
 
 (defgeneric shift-actors (shifter-actor)
   (:method ((shifter-actor shifter-actor))
+    ;; placeholder until later.
     (let ((top (pop (locations shifter-actor))))
       (setf (locations shifter-actor)
             (nconc (locations shifter-actor)
