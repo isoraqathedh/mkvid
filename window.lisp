@@ -2,18 +2,19 @@
 (in-package #:mkvid)
 (in-readtable :qtools)
 
-;;; Main canvas type that everything hangs on
+;;; Main canvas type that everything hangs on, plus the main window
+(define-widget main-window (QWidget) ())
+
 (define-widget canvas (QWidget)
   ((progression :initarg :progression :reader progression)
    (scene :initform (make-instance 'flare:scene) :reader scene)
-   (background :initform *background-colour* :accessor background)))
+   (background :initform *background-colour* :accessor background)
+   (main-window :initarg :main-window :reader main-window)))
 
 (defmethod initialize-instance :after ((canvas canvas) &key width height)
   (setf (q+:fixed-size canvas) (values width height))
   (flare:start (scene canvas))
   (flare:start (flare:enter (flare:progression-instance (progression canvas)) (scene canvas))))
-
-;;; (Future) other widgets and layout
 
 ;;; Animation
 (define-subwidget (canvas timer) (q+:make-qtimer canvas)
@@ -55,35 +56,95 @@
          ()
          (:default-initargs
            :progression ',name
-           :width ,*width*
-           :height ,*height*
+           :width ,width
+           :height ,height
            ,@initargs))
        (let ((*width* ,*width*)
              (*height* ,*height*))
          (flare:define-progression ,name
            ,@intervals)))))
 
+;;; Controls
+(define-signal (main-window play/pause) ())
+(define-signal (main-window play) ())
+(define-signal (main-window pause) ())
+(define-signal (main-window restart) ())
+;; Also maybe: seek ±0.1s, reload another animation
+
+(define-slot (canvas play/pause) ()
+  (declare (connected main-window (play/pause)))
+  (let ((scene (scene canvas)))
+    (if (flare:running scene)
+        (signal! main-window (pause))
+        (signal! main-window (play)))))
+
+(define-slot (canvas play) ()
+  (declare (connected main-window (play)))
+  (flare:start (scene canvas)))
+
+(define-slot (canvas pause) ()
+  (declare (connected main-window (pause)))
+  (flare:stop (scene canvas)))
+
+(define-slot (canvas restart) ()
+  (declare (connected main-window (restart)))
+  (flare:reset (scene canvas)))
+
 ;;; Keybinds
 ;; Currently there is no need to do anything elaborate or serious,
 ;; just respond to the key presses to the canvas that correspond to some action.
 ;; we'll figure something more complex later if we actually need it.
-(define-override (canvas key-press-event) (event)
-  (let ((key (q+:key event))
-        (scene (scene canvas)))
+(define-override (main-window key-press-event) (event)
+  (let ((key (q+:key event)))
     (cond
       ((eql key (q+:qt.Key_Q))
-       (q+:quit qt:*qapplication*))
-      ((eql key (q+:qt.Key_S))
-       (if (flare:running scene)
-           (flare:stop scene)
-           (flare:start scene)))
+       (q+:quit *qapplication*))
+      ((eql key (q+:qt.Key_Space))
+       (signal! main-window (play/pause)))
+      ;; ((and (not (flare:running scene))
+      ;;       (eql key (q+:qt.Key_Comma)))
+      ;;  (flare:synchronize scene (- (print (flare:clock scene)) 1/10))
+      ;;  (flare:update scene)
+      ;;  (q+:repaint canvas))
       ((eql key (q+:qt.Key_R))
-       (flare:stop scene)
-       (flare:reset scene))
+       (signal! main-window (restart)))
       (t (stop-overriding)))))
+
+;;; (Future) other widgets and layout
+;; status bar
+(define-subwidget (main-window status) (q+:make-qstatusbar main-window)
+  (setf (q+:size-grip-enabled status) nil
+        (q+:fixed-height status) 20))
+
+(define-slot (main-window paused) ()
+  (declare (connected main-window (pause)))
+  (q+:show-message (q+:status-bar) "Paused."))
+
+(define-slot (main-window playing) ()
+  (declare (connected main-window (play)))
+  (q+:show-message (q+:status-bar) "Playing."))
+
+(define-slot (main-window restart) ()
+  (declare (connected main-window (pause)))
+  (q+:show-message (q+:status-bar) "Restarted." 2000)
+  (q+:show-message (q+:status-bar) "Paused."))
+
+;; stage
+(define-subwidget (main-window stage)
+    ;; Temporary widget to have something hold on to the slot
+    ;; before the real one takes over
+    (make-instance 'canvas :main-window main-window
+                           :width 1024
+                           :height 576
+                           :progression nil))
+
+;; Layout
+(define-subwidget (main-window layout) (q+:make-qvboxlayout main-window)
+  (q+:add-widget layout stage)
+  (q+:add-widget layout status))
 
 ;;; Main
 (defun present (name)
-  (with-main-window (w name)
-    (setf (q+:window-title w)
-          (format nil "Presenting: ~a" (symbol-name name)))))
+  (with-main-window (w 'main-window)
+    (fsetf (slot-value w 'stage) (make-instance name :main-window w))
+    (setf (q+:window-title w) (format nil "Presenting: ~a" (symbol-name name)))))
