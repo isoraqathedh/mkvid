@@ -61,10 +61,11 @@
                          :background *text-colour*
                          :name :station-oval))
 
-  0 T (:box (calc location :to (let ((clk clock))
-                                 (vec (+ 400 (* 200 (sin clk)))
-                                      (+ 300 (* 200 (sin (* 3/5 clk)))))))
-            (calc text :to (format nil "~,2,,'#,'0f s" clock)))
+  0 T
+  (:box (calc location :to (let ((clk clock))
+                             (vec (+ 400 (* 200 (sin clk)))
+                                  (+ 300 (* 200 (sin (* 3/5 clk)))))))
+        (calc text :to (format nil "~,2,,'#,'0f s" clock)))
 
   0 40 (:coin (calc sprite-location :to (vec (floor (mod (* clock 30) 10)) 0)))
 
