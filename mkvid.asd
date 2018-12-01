@@ -1,7 +1,7 @@
 ;;;; mkvid.asd
 
 (asdf:defsystem #:mkvid
-  :description "Describe mkvid here"
+  :description "An animation engine based on Flare."
   :author "Isoraķatheð Zorethan <isoraqathedh.zorethan@gmail.com>"
   :license  "MIT"
   :version "0.0.1"
