@@ -17,6 +17,15 @@
   (flare:start (flare:enter (flare:progression-instance (progression canvas)) (scene canvas))))
 
 ;;; Animation
+(defclass presentation (flare:progression-definition)
+  ((width :initarg :width :reader width)
+   (height :initarg :height :reader height))
+  (:documentation "A progression-definition embedded with height and width
+to allow relative measurements to .")
+  (:default-initargs
+   :width *width*
+   :height *height*))
+
 (define-subwidget (canvas timer) (q+:make-qtimer canvas)
   (setf (q+:single-shot timer) NIL)
   (q+:start timer (round 1000/30)))
@@ -49,20 +58,12 @@
     (q+:restore target)))
 
 (defmacro define-presentation (name (width height &rest initargs) &body intervals)
-  (let ((*width* width)
-        (*height* height))
-    `(progn
-       (define-widget ,name (QWidget canvas)
-         ()
-         (:default-initargs
-           :progression ',name
-           :width ,width
-           :height ,height
-           ,@initargs))
-       (let ((*width* ,*width*)
-             (*height* ,*height*))
-         (flare:define-progression ,name
-           ,@intervals)))))
+  `(let ((*width* ,width)
+         (*height* ,height))
+     (flare:define-progression ,name
+       ,@intervals)
+     (change-class (flare:progression-definition ',name) 'presentation
+                   ,@initargs)))
 
 ;;; Controls
 (define-signal (main-window play/pause) ())
