@@ -76,6 +76,35 @@ to allow relative measurements to take place.")
                    :width ,width
                    ,@initargs)))
 
+;;; More buttons
+(define-subwidget (main-widget start-stop-button)
+    (q+:make-qpushbutton "Start/Stop" main-widget))
+
+(define-subwidget (main-widget restart-button)
+    (q+:make-qpushbutton "Restart" main-widget))
+
+(define-subwidget (main-widget load-button)
+    (q+:make-qpushbutton "Load" main-widget))
+
+(define-subwidget (main-widget render-button)
+    (q+:make-qpushbutton "Render" main-widget))
+
+(define-subwidget (main-widget information)
+    (q+:make-qtextedit main-widget)
+  (q+:set-plain-text information "This is a placeholder text."))
+
+(define-subwidget (main-widget controls-layout)
+    (q+:make-qgridlayout main-widget)
+  (q+:add-widget controls-layout start-stop-button 0 0 1 2)
+  (q+:add-widget controls-layout restart-button    1 0)
+  (q+:add-widget controls-layout load-button       1 1)
+  (q+:add-widget controls-layout render-button     2 0 1 2)
+  (q+:add-widget controls-layout information       3 0 6 2))
+
+(define-subwidget (main-widget controls-group-box)
+    (q+:make-qgroupbox main-widget)
+  (setf (q+:layout controls-group-box) controls-layout))
+
 ;;; Controls
 (define-signal (main-window play/pause) ())
 (define-signal (main-window play) ())
@@ -164,8 +193,9 @@ to allow relative measurements to take place.")
   (q+:show-message (q+:status-bar main-window) "Paused."))
 
 ;; Layout
-(define-subwidget (main-widget layout) (q+:make-qvboxlayout main-widget)
-  (q+:add-widget layout stage))
+(define-subwidget (main-widget layout) (q+:make-qhboxlayout main-widget)
+  (q+:add-widget layout stage)
+  (q+:add-widget layout controls-group-box))
 
 ;;; Main
 (defun present (name)
