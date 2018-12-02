@@ -3,7 +3,10 @@
 (in-readtable :qtools)
 
 ;;; Main canvas type that everything hangs on, plus the main window
-(define-widget main-window (QWidget) ())
+(define-widget main-window (QMainWindow) ())
+(define-widget main-widget (QWidget) ())
+(define-subwidget (main-window central-widget) (make-instance 'main-widget)
+  (setf (q+:central-widget main-window) central-widget))
 
 (define-widget canvas (QWidget)
   ((progression :initarg :progression :accessor progression)
@@ -11,10 +14,16 @@
    (background :initform *background-colour* :accessor background)
    (main-window :initarg :main-window :reader main-window)))
 
+(define-subwidget (main-widget stage)
+    ;; Temporary widget to have something hold on to the slot
+    ;; before the real one takes over
+    (make-instance 'canvas :main-window main-widget
+                           :width 1024
+                           :height 576
+                           :progression nil))
+
 (defmethod initialize-instance :after ((canvas canvas) &key width height)
-  (setf (q+:fixed-size canvas) (values width height))
-  (flare:start (scene canvas))
-  (flare:start (flare:enter (flare:progression-instance (progression canvas)) (scene canvas))))
+  (setf (q+:fixed-size canvas) (values width height)))
 
 ;;; Animation
 (defclass presentation (flare:progression-definition)
@@ -94,6 +103,24 @@ to allow relative measurements to take place.")
   (declare (connected main-window (restart)))
   (flare:reset (scene canvas)))
 
+(defun load-presentation (presentation-symbol canvas)
+  (let* ((presentation (flare:progression-definition presentation-symbol))
+         (instance (flare:progression-instance presentation-symbol))
+         (*width* (width presentation))
+         (*height* (height presentation)))
+    (setf (progression canvas) presentation
+          (q+:fixed-size canvas) (values (width presentation)
+                                         (height presentation)))
+    (flare:start (scene canvas))
+    (flare:start (print (flare:enter instance (scene canvas))))))
+
+(define-slot (canvas load-presentation) ((presentation-name string))
+  (declare (connected main-window (load-presentation string)))
+  ;; "Put the progression named PROGRESSION into a canvas, but don't play it."
+  (load-presentation
+   (find-symbol (string-upcase presentation-name))
+   canvas))
+
 ;;; Keybinds
 ;; Currently there is no need to do anything elaborate or serious,
 ;; just respond to the key presses to the canvas that correspond to some action.
@@ -134,9 +161,8 @@ to allow relative measurements to take place.")
   (q+:show-message (q+:status-bar main-window) "Paused."))
 
 ;; Layout
-(define-subwidget (main-window layout) (q+:make-qvboxlayout main-window)
-  (q+:add-widget layout stage)
-  (q+:add-widget layout status))
+(define-subwidget (main-widget layout) (q+:make-qvboxlayout main-widget)
+  (q+:add-widget layout stage))
 
 ;;; Main
 (defun present (name)
