@@ -6,7 +6,7 @@
 (define-widget main-window (QWidget) ())
 
 (define-widget canvas (QWidget)
-  ((progression :initarg :progression :reader progression)
+  ((progression :initarg :progression :accessor progression)
    (scene :initform (make-instance 'flare:scene) :reader scene)
    (background :initform *background-colour* :accessor background)
    (main-window :initarg :main-window :reader main-window)))
