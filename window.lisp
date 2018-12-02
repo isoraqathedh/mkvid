@@ -21,7 +21,7 @@
   ((width :initarg :width :reader width)
    (height :initarg :height :reader height))
   (:documentation "A progression-definition embedded with height and width
-to allow relative measurements to .")
+to allow relative measurements to take place.")
   (:default-initargs
    :width *width*
    :height *height*))
