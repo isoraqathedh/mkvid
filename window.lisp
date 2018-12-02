@@ -121,25 +121,16 @@ to allow relative measurements to .")
 
 (define-slot (main-window paused) ()
   (declare (connected main-window (pause)))
-  (q+:show-message (q+:status-bar) "Paused."))
+  (q+:show-message (q+:status-bar main-window) "Paused."))
 
 (define-slot (main-window playing) ()
   (declare (connected main-window (play)))
-  (q+:show-message (q+:status-bar) "Playing."))
+  (q+:show-message (q+:status-bar main-window) "Playing."))
 
 (define-slot (main-window restart) ()
   (declare (connected main-window (pause)))
-  (q+:show-message (q+:status-bar) "Restarted." 2000)
-  (q+:show-message (q+:status-bar) "Paused."))
-
-;; stage
-(define-subwidget (main-window stage)
-    ;; Temporary widget to have something hold on to the slot
-    ;; before the real one takes over
-    (make-instance 'canvas :main-window main-window
-                           :width 1024
-                           :height 576
-                           :progression nil))
+  (q+:show-message (q+:status-bar main-window) "Restarted." 2000)
+  (q+:show-message (q+:status-bar main-window) "Paused."))
 
 ;; Layout
 (define-subwidget (main-window layout) (q+:make-qvboxlayout main-window)
@@ -149,5 +140,6 @@ to allow relative measurements to .")
 ;;; Main
 (defun present (name)
   (with-main-window (w 'main-window)
-    (fsetf (slot-value w 'stage) (make-instance name :main-window w))
+    (load-presentation name (slot-value (q+:central-widget w) 'stage))
+    (q+:show-message (q+:status-bar w) "Ready.")
     (setf (q+:window-title w) (format nil "Presenting: ~a" (symbol-name name)))))
