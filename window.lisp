@@ -72,7 +72,8 @@ to allow relative measurements to take place.")
 (define-signal (main-window play) ())
 (define-signal (main-window pause) ())
 (define-signal (main-window restart) ())
-;; Also maybe: seek ±0.1s, reload another animation
+(define-signal (main-window seek) (float)) ; float = seek time delta
+(define-signal (main-window load-presentation) (string)) ; string = name of symbol of presentation
 
 (define-slot (canvas play/pause) ()
   (declare (connected main-window (play/pause)))
