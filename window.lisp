@@ -63,6 +63,8 @@ to allow relative measurements to .")
      (flare:define-progression ,name
        ,@intervals)
      (change-class (flare:progression-definition ',name) 'presentation
+                   :height ,height
+                   :width ,width
                    ,@initargs)))
 
 ;;; Controls
