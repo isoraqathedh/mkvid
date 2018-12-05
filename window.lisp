@@ -101,17 +101,22 @@ to allow relative measurements to take place.")
 (define-subwidget (main-widget render-button)
     (q+:make-qpushbutton "Render" main-widget))
 
+(define-subwidget (main-widget quit-button)
+    (q+:make-qpushbutton "Quit" main-widget))
+
 (define-subwidget (main-widget information)
     (q+:make-qtextedit main-widget)
   (q+:set-plain-text information "This is a placeholder text."))
 
 (define-subwidget (main-widget controls-layout)
     (q+:make-qgridlayout main-widget)
+  ;;                                               t l h w
   (q+:add-widget controls-layout start-stop-button 0 0 1 2)
   (q+:add-widget controls-layout restart-button    1 0)
   (q+:add-widget controls-layout load-button       1 1)
-  (q+:add-widget controls-layout render-button     2 0 1 2)
-  (q+:add-widget controls-layout information       3 0 6 2))
+  (q+:add-widget controls-layout render-button     2 0)
+  (q+:add-widget controls-layout quit-button       2 1)
+  (q+:add-widget controls-layout information       3 0 5 2))
 
 (define-subwidget (main-widget controls-group-box)
     (q+:make-qgroupbox main-widget)
