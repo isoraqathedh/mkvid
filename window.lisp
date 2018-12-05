@@ -15,9 +15,13 @@ and so on until the end of SLOTS is reached."
         finally (return acc)))
 
 ;;; Main canvas type that everything hangs on, plus the main window
-(define-widget main-window (QMainWindow) ())
-(define-widget main-widget (QWidget) ())
-(define-subwidget (main-window central-widget) (make-instance 'main-widget)
+(define-widget main-window (QMainWindow)
+  ((widget-registry :accessor widgets :initform (make-hash-table))))
+(define-widget main-widget (QWidget)
+  ((main-window :reader main-window :initarg :main-window)))
+
+(define-subwidget (main-window central-widget)
+    (make-instance 'main-widget :main-window main-window)
   (setf (q+:central-widget main-window) central-widget))
 
 (define-widget canvas (QWidget)
