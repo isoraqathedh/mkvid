@@ -2,6 +2,18 @@
 (in-package #:mkvid)
 (in-readtable :qtools)
 
+(defun rslot-value (object &rest slots)
+  "Retrieve the slots repeatedly from OBJECT.
+
+For a list of slot names ('one 'two 'three ...),
+first retrieve slot ONE of OBJECT,
+then retrieve slot TWO of the result thereof,
+then retrieve slot THREE of that result thereof,
+and so on until the end of SLOTS is reached."
+  (loop for i in slots
+        for acc = (slot-value object i) then (slot-value acc i)
+        finally (return acc)))
+
 ;;; Main canvas type that everything hangs on, plus the main window
 (define-widget main-window (QMainWindow) ())
 (define-widget main-widget (QWidget) ())
@@ -188,7 +200,9 @@ to allow relative measurements to take place.")
   (q+:show-message (q+:status-bar main-window) "Playing."))
 
 (define-slot (main-window restart) ()
-  (declare (connected main-window (pause)))
+  (declare (connected main-window (pause))
+           (connected (rslot-value main-window 'central-widget 'restart-button)
+                      (released)))
   (q+:show-message (q+:status-bar main-window) "Restarted." 2000)
   (q+:show-message (q+:status-bar main-window) "Paused."))
 
@@ -200,6 +214,6 @@ to allow relative measurements to take place.")
 ;;; Main
 (defun present (name)
   (with-main-window (w 'main-window)
-    (load-presentation name (slot-value (q+:central-widget w) 'stage))
+    (load-presentation name (rslot-value w 'central-widget 'stage))
     (q+:show-message (q+:status-bar w) "Ready.")
     (setf (q+:window-title w) (format nil "Presenting: ~a" (symbol-name name)))))
