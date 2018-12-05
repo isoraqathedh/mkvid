@@ -214,8 +214,7 @@ to allow relative measurements to take place.")
   (declare (connected main-window (pause))
            (connected (rslot-value main-window 'central-widget 'restart-button)
                       (released)))
-  (q+:show-message (q+:status-bar main-window) "Restarted." 2000)
-  (q+:show-message (q+:status-bar main-window) "Paused."))
+  (q+:show-message (q+:status-bar main-window) "Restarted." 2000))
 
 ;; Layout
 (define-subwidget (main-widget layout) (q+:make-qhboxlayout main-widget)
