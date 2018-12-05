@@ -130,8 +130,13 @@ to allow relative measurements to take place.")
 (define-signal (main-window seek) (float)) ; float = seek time delta
 (define-signal (main-window load-presentation) (string)) ; string = name of symbol of presentation
 
+;; These ruddy slots can only connect to things
+;; that the primary object can access
+;; they probably need to be placed at the top widget.
+;; Also they must all be initialised before you can connect them.
 (define-slot (canvas play/pause) ()
   (declare (connected main-window (play/pause)))
+  ;; (declare (connected (slot-value main-window 'start-stop-button) (pressed)))
   (print "Play/pause received.")
   (let ((scene (scene canvas)))
     (if (flare:running scene)
