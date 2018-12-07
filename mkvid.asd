@@ -12,5 +12,6 @@
                (:file "colours")
                (:file "coordinates")
                (:file "window")
+               (:file "behaviour")
                (:file "actor")
                (:file "mkvid")))
