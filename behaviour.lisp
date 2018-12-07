@@ -73,6 +73,51 @@ and so on until the end of SLOTS is reached."
 (define-slot (main-window reset-time) ()
   (setf (q+:text clock-display) (format-clock nil)))
 
+;;; Canvas
+(define-subwidget (canvas timer) (q+:make-qtimer canvas)
+  (setf (q+:single-shot timer) NIL)
+  (q+:start timer (round 1000/30)))
+
+(define-slot (canvas update) ()
+  (declare (connected timer (timeout)))
+  (with-finalizing ((canvas-size (q+:size canvas)))
+    (let ((*width* (q+:width canvas-size))
+          (*height* (q+:height canvas-size)))
+      (flare:update (scene canvas)))
+    (q+:repaint canvas)))
+
+(define-override (canvas paint-event) (ev)
+  (declare (ignore ev))
+  (with-finalizing ((painter (q+:make-qpainter canvas))
+                    (back (brush (background canvas))))
+    (setf (q+:background painter) back)
+    (q+:erase-rect painter (q+:rect canvas))
+    (q+:save painter)
+    (flare:paint scene painter)
+    (q+:restore painter))
+  (stop-overriding))
+
+(define-slot (canvas play) ()
+  (flare:start (scene canvas)))
+
+(define-slot (canvas pause) ()
+  (flare:stop (scene canvas)))
+
+(define-slot (canvas restart) ()
+  (flare:reset (scene canvas)))
+
+(defun load-presentation (presentation-symbol canvas)
+  (let* ((presentation (flare:progression-definition presentation-symbol))
+         (instance (flare:progression-instance presentation-symbol))
+         (w (width presentation))
+         (h (height presentation))
+         (*width* w)
+         (*height* h))
+    (setf (progression canvas) presentation
+          (q+:fixed-size canvas) (values w h))
+    (flare:start (scene canvas))
+    (flare:start (flare:enter instance (scene canvas)))))
+
 ;;; Connecting everything up
 (define-initializer (main-window connect-signals -1)
   "Connect all the inter-widget slots together."
