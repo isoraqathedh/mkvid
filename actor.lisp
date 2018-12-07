@@ -219,3 +219,9 @@
       (setf (locations shifter-actor)
             (nconc (locations shifter-actor)
                    (list top))))))
+
+;;; Indicator bar actor
+(defclass abstract-bar-actor (box)
+  ((maximum)
+   (current)
+   (restrict-minimum-p)))
