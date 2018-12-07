@@ -128,35 +128,39 @@ to allow relative measurements to take place.")
 
 ;;; Controls
 (define-signal (main-window play/pause) ())
-(define-signal (main-window play) ())
-(define-signal (main-window pause) ())
-(define-signal (main-window restart) ())
-(define-signal (main-window seek) (float)) ; float = seek time delta
-(define-signal (main-window load-presentation) (string)) ; string = name of symbol of presentation
-
-;; These ruddy slots can only connect to things
-;; that the primary object can access
-;; they probably need to be placed at the top widget.
-;; Also they must all be initialised before you can connect them.
-(define-slot (canvas play/pause) ()
-  (declare (connected main-window (play/pause)))
-  ;; (declare (connected (slot-value main-window 'start-stop-button) (pressed)))
-  (print "Play/pause received.")
-  (let ((scene (scene canvas)))
+(define-slot (main-window play/pause-receiver) ()
+  (let ((scene (scene (rslot-value main-window 'central-widget 'stage))))
     (if (flare:running scene)
         (signal! main-window (pause))
         (signal! main-window (play)))))
 
+(define-signal (main-window play) ())
+(define-slot (main-window play-receiver) ()
+  (signal! main-window (play)))
+
+(define-signal (main-window pause) ())
+(define-slot (main-window pause-receiver) ()
+  (signal! main-window (pause)))
+
+(define-signal (main-window restart) ())
+(define-slot (main-window restart-receiver) ()
+  (signal! main-window (restart)))
+
+(define-signal (main-window seek) (float))
+(define-slot (main-window seek-receiver) ((delta float))
+  (signal! main-window (seek float) delta))
+
+(define-signal (main-window load-presentation) (string))
+(define-slot (main-window load-presentation-receiver) ((presentation string))
+  (signal! main-window (load-presentation string) presentation))
+
 (define-slot (canvas play) ()
-  (declare (connected main-window (play)))
   (flare:start (scene canvas)))
 
 (define-slot (canvas pause) ()
-  (declare (connected main-window (pause)))
   (flare:stop (scene canvas)))
 
 (define-slot (canvas restart) ()
-  (declare (connected main-window (restart)))
   (flare:reset (scene canvas)))
 
 (defun load-presentation (presentation-symbol canvas)
@@ -172,7 +176,6 @@ to allow relative measurements to take place.")
     (flare:start (flare:enter instance (scene canvas)))))
 
 (define-slot (canvas load-presentation) ((presentation-name string))
-  (declare (connected main-window (load-presentation string)))
   ;; "Put the progression named PROGRESSION into a canvas, but don't play it."
   (load-presentation
    (find-symbol (string-upcase presentation-name))
@@ -207,23 +210,57 @@ to allow relative measurements to take place.")
         (q+:fixed-height status) 20))
 
 (define-slot (main-window paused) ()
-  (declare (connected main-window (pause)))
   (q+:show-message (q+:status-bar main-window) "Paused."))
 
 (define-slot (main-window playing) ()
-  (declare (connected main-window (play)))
   (q+:show-message (q+:status-bar main-window) "Playing."))
 
 (define-slot (main-window restart) ()
-  (declare (connected main-window (pause))
-           (connected (rslot-value main-window 'central-widget 'restart-button)
+  (declare (connected (rslot-value main-window 'central-widget 'restart-button)
                       (released)))
   (q+:show-message (q+:status-bar main-window) "Restarted." 2000))
+
+(defun format-clock (seconds-or-nil)
+  (format nil "~:[---.--~;~:*~,2f~] s" seconds-or-nil))
+
+(define-subwidget (main-window clock-display)
+    (q+:make-qlabel (format-clock nil) (q+:status-bar main-window))
+  (setf (q+:alignment clock-display) (q+:qt.align-right)
+        (q+:text-format clock-display) (q+:qt.plain-text))
+  (q+:add-permanent-widget (q+:status-bar main-window) clock-display 5))
+
+(define-slot (main-window set-time) ((clock-time float))
+  (setf (q+:text clock-display) (format-clock clock-time)))
+(define-slot (main-window reset-time) ()
+  (setf (q+:text clock-display) (format-clock nil)))
+
+(define-subwidget (main-window clock-font)
+    (q+:make-qfont "Ubuntu Mono")
+  (setf (q+:font clock-display) clock-font))
 
 ;; Layout
 (define-subwidget (main-widget layout) (q+:make-qhboxlayout main-widget)
   (q+:add-widget layout stage)
   (q+:add-widget layout controls-group-box))
+
+;;; Connecting everything up
+(define-initializer (main-window connect-signals -1)
+  "Connect all the inter-widget slots together."
+  ;; Senders
+  (connect! (rslot-value central-widget 'start-stop-button) (pressed)
+            main-window (play/pause-receiver))
+
+  ;; Receivers
+  (connect! main-window (play)
+            (rslot-value central-widget 'stage) (play))
+  (connect! main-window (pause)
+            (rslot-value central-widget 'stage) (pause))
+  (connect! main-window (play) main-window (playing))
+  (connect! main-window (pause) main-window (paused))
+  t)
+
+(define-initializer (main-window final-setup -2)
+  (q+:show-message (q+:status-bar main-window) "Ready."))
 
 ;;; Main
 (defun present (name)
