@@ -58,9 +58,7 @@ and so on until the end of SLOTS is reached."
   (q+:show-message (q+:status-bar main-window) "Playing."))
 
 (define-slot (main-window restart) ()
-  (declare (connected (rslot-value main-window 'central-widget 'restart-button)
-                      (released)))
-  (q+:show-message (print (q+:status-bar main-window)) "Restarted." 2000))
+  (declare (connected main-window (restart)))
 
 ;;; Clock display.
 (defun format-clock (seconds-or-nil)
@@ -84,6 +82,7 @@ and so on until the end of SLOTS is reached."
     (let ((*width* (q+:width canvas-size))
           (*height* (q+:height canvas-size)))
       (flare:update (scene canvas)))
+    (signal! main-window (set-clock-time float) (clock (scene canvas)))
     (q+:repaint canvas)))
 
 (define-override (canvas paint-event) (ev)
@@ -124,12 +123,20 @@ and so on until the end of SLOTS is reached."
   ;; Senders
   (connect! (rslot-value central-widget 'start-stop-button) (pressed)
             main-window (play/pause-receiver))
+  (connect! (rslot-value central-widget 'restart-button) (released)
+            main-window (restart-receiver))
 
   ;; Receivers
   (connect! main-window (play)
             (rslot-value central-widget 'stage) (play))
   (connect! main-window (pause)
             (rslot-value central-widget 'stage) (pause))
+  (connect! main-window (restart)
+            (rslot-value central-widget 'stage) (restart))
+
+  ;; other
+  (connect! (rslot-value central-widget 'playback-reset) (pressed)
+            (rslot-value central-widget 'stage) (restore-speed))
   ;; (connect! main-window (play) main-window (playing))
   ;; (connect! main-window (pause) main-window (paused))
   t)
