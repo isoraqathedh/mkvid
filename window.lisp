@@ -25,7 +25,7 @@
 (define-subwidget (main-widget stage)
     ;; Temporary widget to have something hold on to the slot
     ;; before the real one takes over
-    (make-instance 'canvas :main-window main-widget
+    (make-instance 'canvas :main-window (slot-value main-widget 'main-window)
                            :width 1024
                            :height 576
                            :progression nil))
