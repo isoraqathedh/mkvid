@@ -62,6 +62,16 @@
 (define-subwidget (main-widget quit-button)
     (q+:make-qpushbutton "Quit" main-widget))
 
+(define-subwidget (main-widget playback-input)
+    (q+:make-qlineedit "1" main-widget))
+
+(define-subwidget (main-widget playback-label)
+    (q+:make-qlabel "Speed" main-widget)
+  (setf (q+:buddy playback-label) playback-input))
+
+(define-subwidget (main-widget playback-reset)
+    (q+:make-qpushbutton "Reset speed" main-widget))
+
 (define-subwidget (main-widget information)
     (q+:make-qtextedit main-widget)
   (q+:set-plain-text information "This is a placeholder text."))
@@ -69,20 +79,23 @@
 (define-subwidget (main-widget controls-layout)
     (q+:make-qgridlayout main-widget)
   ;;                                               t l h w
-  (q+:add-widget controls-layout start-stop-button 0 0 1 2)
-  (q+:add-widget controls-layout restart-button    1 0)
-  (q+:add-widget controls-layout load-button       1 1)
-  (q+:add-widget controls-layout render-button     2 0)
-  (q+:add-widget controls-layout quit-button       2 1)
-  (q+:add-widget controls-layout information       3 0 5 2))
+  (q+:add-widget controls-layout start-stop-button 0 0 1 4)
+  (q+:add-widget controls-layout restart-button    1 0 1 2)
+  (q+:add-widget controls-layout load-button       1 2 1 2)
+  (q+:add-widget controls-layout render-button     2 0 1 2)
+  (q+:add-widget controls-layout quit-button       2 2 1 2)
+  (q+:add-widget controls-layout playback-label    3 0 1 1)
+  (q+:add-widget controls-layout playback-input    3 1 1 2)
+  (q+:add-widget controls-layout playback-reset    3 3 1 1)
+  (q+:add-widget controls-layout information       4 0 5 4))
 
 (define-subwidget (main-widget controls-group-box)
     (q+:make-qgroupbox main-widget)
   (setf (q+:layout controls-group-box) controls-layout))
 
 (define-subwidget (main-widget layout) (q+:make-qhboxlayout main-widget)
-  (q+:add-widget layout stage)
-  (q+:add-widget layout controls-group-box))
+  (q+:add-widget layout controls-group-box)
+  (q+:add-widget layout stage))
 
 ;;; Animation
 (defclass presentation (flare:progression-definition)
