@@ -12,7 +12,7 @@
    :background *background-colour*))
 
 (define-presentation test (1024 576)
-  0.5
+  0.01
   (T (enter box
             :location (vec (rx 1/8) 0)
             :size (vec 30 (ry 1))
@@ -34,14 +34,14 @@
             :size (vec (rx 9/10) (ry 1/10))
             :text "East Coast Main Line"
             :name :line-box)
-     (enter textbox
-            :border (cons (vec 3 3 3 3) (->colour 240 0 0))
-            :location (vec (rx 1/5) (ry 1/5))
-            :text "Test"
-            :font-color *text-colour*
-            :font-size 20
-            :size (vec 150 40)
-            :name :box)
+     ;; (enter textbox
+     ;;        :border (cons (vec 3 3 3 3) (->colour 240 0 0))
+     ;;        :location (vec (rx 1/5) (ry 1/5))
+     ;;        :text "Test"
+     ;;        :font-color *text-colour*
+     ;;        :font-size 20
+     ;;        :size (vec 150 40)
+     ;;        :name :box)
      (enter image-actor
             :image-file (asdf:system-relative-pathname 'mkvid "sprite-test" :type "png")
             :size (vec 100 100)
@@ -61,11 +61,11 @@
                          :background *text-colour*
                          :name :station-oval))
 
-  0 T
-  (:box (calc location :to (let ((clk clock))
-                             (vec (+ 400 (* 200 (sin clk)))
-                                  (+ 300 (* 200 (sin (* 3/5 clk)))))))
-        (calc text :to (format nil "~,2,,'#,'0f s" clock)))
+  ;; 0 T
+  ;; (:box (calc location :to (let ((clk clock))
+  ;;                            (vec (+ 400 (* 200 (sin clk)))
+  ;;                                 (+ 300 (* 200 (sin (* 3/5 clk)))))))
+  ;;       (calc text :to (format nil "~,2,,'#,'0f s" clock)))
 
   0 40 (:coin (calc sprite-location :to (vec (floor (mod (* clock 30) 10)) 0)))
 
