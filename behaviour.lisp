@@ -112,7 +112,7 @@ and so on until the end of SLOTS is reached."
          (*height* h))
     (setf (progression canvas) presentation
           (q+:fixed-size canvas) (values w h))
-    (flare:start (scene canvas))
+    ;; (flare:start (scene canvas))
     (flare:start (flare:enter instance (scene canvas)))))
 
 ;;; Connecting everything up
