@@ -41,6 +41,9 @@
         (q+:frame-style clock-display) (q+:qframe.vline))
   (q+:add-permanent-widget (q+:status-bar main-window) clock-display))
 
+(defun format-clock (seconds-or-nil)
+  (format nil "t: ~:[---.--~;~:*~6,2f~] s" seconds-or-nil))
+
 (define-subwidget (main-window clock-font)
     (q+:make-qfont "Ubuntu Mono" 15)
   (with-finalizing ((metric (q+:make-qfontmetrics clock-font main-window)))
