@@ -38,13 +38,17 @@
     (q+:make-qlabel (format-clock nil) (q+:status-bar main-window))
   (setf (q+:alignment clock-display) (q+:qt.align-right)
         (q+:text-format clock-display) (q+:qt.plain-text)
-        (q+:frame-style clock-display) (q+:qframe.vline)
-        (q+:fixed-width clock-display) 200)
+        (q+:frame-style clock-display) (q+:qframe.vline))
   (q+:add-permanent-widget (q+:status-bar main-window) clock-display))
 
 (define-subwidget (main-window clock-font)
-    (q+:make-qfont "Ubuntu Mono")
-  (setf (q+:font clock-display) clock-font))
+    (q+:make-qfont "Ubuntu Mono" 15)
+  (with-finalizing ((metric (q+:make-qfontmetrics clock-font main-window)))
+    (setf (q+:fixed-width clock-display)
+          (* 3                          ; × 3 because the width
+                                        ; is wrong in a way I can't fix.
+             (q+:width metric (format-clock nil)))
+          (q+:font clock-display) clock-font)))
 
 ;; Side buttons
 (define-subwidget (main-widget start-stop-button)
