@@ -222,6 +222,10 @@
 
 ;;; Indicator bar actor
 (defclass abstract-bar-actor (box)
-  ((maximum)
-   (current)
-   (restrict-minimum-p)))
+  ((bar-maximum :initarg :maximum :accessor bar-maximum)
+   (bar-current :initarg :current :accessor bar-current)
+   (label)
+   (label-position)))
+
+(defclass bar-actor (abstract-bar-actor)
+  ())
