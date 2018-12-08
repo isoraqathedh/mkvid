@@ -103,6 +103,18 @@ and so on until the end of SLOTS is reached."
 (define-slot (canvas restart) ()
   (flare:reset (scene canvas)))
 
+(define-slot (canvas set-playback-speed) ((speed float)) ; may not work
+  (setf (flare:timescale (clock (scene canvas))) speed))
+
+(define-slot (canvas restore-speed) () ; definitely doesn't work
+  (setf (q+:text (rslot-value main-window 'central-widget 'playback-input)) "1")
+  (setf (flare:timescale (scene canvas)) 1))
+
+(define-slot (canvas seek) ((delta float))
+  (let ((clock (clock (scene canvas))))
+   (unless (flare:running (scene canvas))
+     (flare:synchronize clock (- clock delta)))))
+
 (defun load-presentation (presentation-symbol canvas)
   (let* ((presentation (flare:progression-definition presentation-symbol))
          (instance (flare:progression-instance presentation-symbol))
