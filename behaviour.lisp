@@ -59,6 +59,7 @@ and so on until the end of SLOTS is reached."
 
 (define-slot (main-window restart) ()
   (declare (connected main-window (restart)))
+  (q+:show-message (q+:status-bar main-window) "Restarted." 2000))
 
 ;;; Clock display.
 (defun format-clock (seconds-or-nil)
