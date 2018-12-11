@@ -42,6 +42,13 @@
      ;;        :font-size 20
      ;;        :size (vec 150 40)
      ;;        :name :box)
+     (enter bar-actor
+            :size (vec 90 (ry 4/5))
+            :location (vec 40 (ry 1/10))
+            :current 30
+            :border (cons (vec 1 1 1 1) (->colour 90 0 0))
+            :direction :vertical
+            :name :whatever)
      (enter image-actor
             :image-file (asdf:system-relative-pathname 'mkvid "sprite-test" :type "png")
             :size (vec 100 100)
@@ -67,7 +74,9 @@
   ;;                                 (+ 300 (* 200 (sin (* 3/5 clk)))))))
   ;;       (calc text :to (format nil "~,2,,'#,'0f s" clock)))
 
-  0 40 (:coin (calc sprite-location :to (vec (floor (mod (* clock 30) 10)) 0)))
+  0 40
+  (:coin (calc sprite-location :to (vec (floor (mod (* clock 30) 10)) 0)))
+  (:whatever (calc bar-current :to (+ 60 (* 30 (sin clock)))))
 
   5 5.5
   (:station-label (set location :to (vec 0 -100) :ease flare:quad-out))
