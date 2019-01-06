@@ -1,4 +1,5 @@
 ;;;; package.lisp
+(in-package #:cl-user)
 
 (defpackage #:info.isoraqathedh.mkvid
   (:nicknames #:mkvid)
