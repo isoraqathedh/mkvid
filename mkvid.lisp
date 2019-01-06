@@ -12,7 +12,7 @@
    :background *background-colour*))
 
 (define-presentation test (1024 576)
-  0.01
+  0.1
   (T (enter box
             :location (vec (rx 1/8) 0)
             :size (vec 30 (ry 1))
