@@ -13,5 +13,6 @@
                (:file "coordinates")
                (:file "window")
                (:file "behaviour")
+               (:file "export")
                (:file "actor")
                (:file "mkvid")))
