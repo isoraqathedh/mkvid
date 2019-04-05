@@ -112,8 +112,9 @@ and so on until the end of SLOTS is reached."
 
 (define-slot (canvas seek) ((delta float))
   (let ((clock (clock (scene canvas))))
-   (unless (flare:running (scene canvas))
-     (flare:synchronize clock (- clock delta)))))
+    (unless (flare:running (scene canvas))
+      (flare:synchronize clock (- clock delta))
+      (q+:repaint canvas))))
 
 (defun load-presentation (presentation-symbol canvas)
   (let* ((presentation (flare:progression-definition presentation-symbol))
