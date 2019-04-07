@@ -19,6 +19,11 @@
    (background :initform *background-colour* :accessor background)
    (main-window :initarg :main-window :reader main-window)))
 
+(defgeneric progression-of (canvas)
+  (:documentation "Get the progression (of the progression instance) of the canvas.")
+  (:method ((canvas canvas))
+    (first (flare:progressions (scene canvas)))))
+
 (defmethod initialize-instance :after ((canvas canvas) &key width height)
   (setf (q+:fixed-size canvas) (values width height)))
 
@@ -136,23 +141,21 @@ to allow relative measurements to take place.")
 ;; Currently there is no need to do anything elaborate or serious,
 ;; just respond to the key presses to the canvas that correspond to some action.
 ;; we'll figure something more complex later if we actually need it.
+(defparameter *step-interval* 1/30
+  "Interval for which the comma and full stop keys will jump the animation for.")
+
 (define-override (main-window key-press-event) (event)
-  (let ((key (q+:key event))
-        (scene (rslot-value main-window 'central-widget 'stage 'scene))
-        (canvas (rslot-value main-window 'central-widget 'stage)))
+  (let* ((key (q+:key event))
+         (canvas (rslot-value main-window 'central-widget 'stage)))
     (cond
       ((eql key (q+:qt.Key_Q))
        (q+:quit *qapplication*))
       ((eql key (q+:qt.Key_Space))
        (signal! main-window (play/pause)))
-      ((and (not (flare:running scene))
-            (eql key (q+:qt.Key_Comma)))
-       (flare:update (flare:synchronize scene (- (print (flare:clock scene)) 1/10)))
-       (q+:repaint canvas))
-      ((and (not (flare:running scene))
-            (eql key (q+:qt.Key_Period)))
-       (flare:update (flare:synchronize scene (+ (print (flare:clock scene)) 1/10)))
-       (q+:repaint canvas))
+      ((eql key (q+:qt.Key_Comma))
+       (signal! canvas (seek-by float) (float (- *step-interval*) 0.0)))
+      ((eql key (q+:qt.Key_Period))
+       (signal! canvas (seek-by float) (float (+ *step-interval*) 0.0)))
       ((eql key (q+:qt.Key_R))
        (signal! main-window (restart)))
       (t (stop-overriding)))))
