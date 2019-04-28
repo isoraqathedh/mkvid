@@ -121,7 +121,7 @@ and so on until the end of SLOTS is reached."
     ;; Two clocks that need to be updated:
     ;; - The clock in the animation (progression, of progression-definition)
     (flare:update (flare:clock progrn))
-    (flare:update (flare:synchronize progrn (+ pclk delta)))
+    (flare:update (flare:synchronize progrn (max 0 (+ pclk delta))))
     ;; - The clock in the scene
     (flare:update (flare:synchronize (scene canvas) progrn))))
 
