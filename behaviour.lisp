@@ -103,10 +103,26 @@ and so on until the end of SLOTS is reached."
 (define-slot (canvas restart) ()
   (flare:reset (scene canvas)))
 
-(define-slot (canvas set-playback-speed) ((speed float)) ; may not work
+(define-signal (main-window playback-speed) ())
+(define-slot (main-window set-playback-speed) ()
+  (declare (connected main-window (playback-speed))
+           (connected (slot-value central-widget 'playback-input) (return-pressed)))
+  (signal! (slot-value central-widget 'canvas) (set-playback-speed float)
+           (handler-case (parse-float:parse-float
+                          (q+:text
+                           (slot-value central-widget 'playback-input)))
+             (alexandria:simple-parse-error (c)
+               (q+:qmessagebox-information
+                main-window "Format error"
+                (format nil
+                 "Incorrect value specified for playback speed. ~
+Defaulting to 1. Error is: ~a" c))
+               1.0))))
+
+(define-slot (canvas set-playback-speed) ((speed float))
   (setf (flare:timescale (progression-of canvas)) speed))
 
-(define-slot (canvas restore-speed) () ; definitely doesn't work
+(define-slot (canvas restore-speed) ()
   (setf (q+:text (rslot-value main-window 'central-widget 'playback-input)) "1"
         (flare:timescale (progression-of canvas)) 1))
 
