@@ -67,7 +67,6 @@ You only decide on the frame rate when it is time to export the video.
 
 - Export to video
 - Fully functional UI
-- Time manipulation
 - Seeking
 
 ## Possibly
