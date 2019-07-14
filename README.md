@@ -56,6 +56,11 @@ After that, you can preview the animation by running
 
 Where `presentation-name` is the name of your presentation.
 This would pull up a GUI.
+The GUI will show your presentation at 30 frames per second.
+However, you do not decide on a frame rate at all
+while composing the presentation;
+anything can happen wherever a double floating point number exists.
+You only decide on the frame rate when it is time to export the video.
 
 # Things to come
 ## Definitely
