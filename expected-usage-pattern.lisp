@@ -21,8 +21,22 @@
 (in-package #:mkvid)
 (named-readtables:in-readtable :qtools)
 
-(define-presentation example-video (1024 768)
-  ;; examples here...
+(define-presentation example-video (1024 576)
+  ;; Title screen
+  0.1 1 (t (enter title-textbox :name :title-text
+                                :text "The Title"
+                                :ease flare:quad-in))
+  5 6 (:title-text (leave))
+  ;; A bunch of text scrolling by.
+  8 (t (enter textbox :name :lyrics-box
+                      :align (cons :left :bottom)
+                      :size (vec (rx 3/8) (ry 4/5))
+                      :size (vec (rx 1/8) (ry 1/10))
+                      :text ""
+                      :background *background-colour*))
+  10 (:lyrics-box (append-text "A new line"))
+  12 (:lyrics-box (append-text "Another new line"))
+  ;; More examples later...
   )
 
 (mkvid example-video)
