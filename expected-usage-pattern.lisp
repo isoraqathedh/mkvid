@@ -18,9 +18,15 @@
 
 ;;;; This is not a formal part of mkvid and contains no essential code for it.
 
+;;; Preamble
 (in-package #:mkvid)
 (named-readtables:in-readtable :qtools)
 
+;;; Definitions go here
+
+;;; Custom actors go here, if there are any
+
+;;; The actual video
 (define-presentation example-video (1024 576)
   ;; Title screen
   0.1 (t (enter subtitles :name :subtitles))
