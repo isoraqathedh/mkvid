@@ -48,5 +48,5 @@
   ;; More examples later...
   )
 
-(mkvid example-video)
-(mksubtitles example-video)
+(mkvid example-video #P"example-video.mp4")
+(mksubtitles example-video :subtitles)
