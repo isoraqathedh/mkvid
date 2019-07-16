@@ -23,9 +23,11 @@
 
 (define-presentation example-video (1024 576)
   ;; Title screen
+  0.1 (t (enter subtitles :name :subtitles))
   0.1 1 (t (enter title-textbox :name :title-text
                                 :text "The Title"
                                 :ease flare:quad-in))
+  1 7 (:subtitles (display "A narration of the title."))
   5 6 (:title-text (leave))
   ;; A bunch of text scrolling by.
   8 (t (enter textbox :name :lyrics-box
@@ -34,6 +36,7 @@
                       :size (vec (rx 1/8) (ry 1/10))
                       :text ""
                       :background *background-colour*))
+  10 14 (:subtitles (display "A new line | Another new line"))
   10 (:lyrics-box (append-text "A new line"))
   12 (:lyrics-box (append-text "Another new line"))
   ;; More examples later...
