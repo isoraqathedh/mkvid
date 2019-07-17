@@ -165,7 +165,7 @@
      ;; Painting the sprite
      ;; we want the image to be centred at the location mark.
      ;; This is more expected behaviour.
-     (floor sprite-width -2) (floor sprite-height -2) ; location
+     (round sprite-width -2) (round sprite-height -2) ; location
      sprite-width sprite-height                       ; drawing rectangle size
      (qpixmap-of image-actor)                         ; image
      ;; The location of the sprite
