@@ -46,7 +46,28 @@
   10 (:lyrics-box (append-text "A new line"))
   12 (:lyrics-box (append-text "Another new line"))
   ;; More examples later...
-  )
+
+  16 (:subtitles (display))
+  16 (:lyrics-box (leave))
+
+  20 (t (enter text :text "A word"
+               ;; alignment arguments omitted
+                    :name :word))
+  20 23 (:subtitles (display "So we start here"))
+  24 (t (enter image-actor
+               :name :card-1
+               :image-file #P"card-1.png"
+               :location (vec (rx 1) (ry 1/2))
+               :size (vec 100 100)))
+  24.5 25.3 (:card-1 (set location :to (vec (rx 1/2) (ry 1/2))
+                                   :ease flare:quad-in))
+  25.3 (t (enter image-actor :name :explosion
+                             :location (vec (rx 1/2) (ry 1/2))
+                             :image-file #P"explosion.png"))
+  25.5
+  ((:card-1 :explosion) (leave))
+  (:word (set text :to "B word"))
+  23 26 (:subtitles (display "and if then fire this card,")))
 
 (mkvid example-video #P"example-video.mp4")
 (mksubtitles example-video :subtitles)
