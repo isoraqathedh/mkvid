@@ -162,9 +162,12 @@
         (sprite-height (floor (vy (size image-actor)))))
     (q+:draw-pixmap
      painter
-     0 0                                ; location
-     sprite-width sprite-height         ; drawing rectangle size
-     (qpixmap-of image-actor)           ; image
+     ;; Painting the sprite
+     ;; we want the image to be centred at the location mark.
+     ;; This is more expected behaviour.
+     (floor sprite-width -2) (floor sprite-height -2) ; location
+     sprite-width sprite-height                       ; drawing rectangle size
+     (qpixmap-of image-actor)                         ; image
      ;; The location of the sprite
      ;; We'll take the size of the sprite as the size of the actor,
      ;; and then take the vxth column of the vyth row
