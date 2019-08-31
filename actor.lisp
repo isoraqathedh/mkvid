@@ -187,11 +187,15 @@
 
 ;;; Group actor
 ;;; a formation that join two or more actors.
+;;; Their positions are, instead of having their own,
+;;; completely determined by the group-actor.
+;;; The actor should be placed at (0, 0) to begin with to minimise surprises.
 (defclass group-actor (flare:container-unit)
   ((locations :accessor locations :initarg :locations)
    (flare:location :accessor location :initarg :location))
   (:default-initargs
-   :locations nil))
+   :locations nil
+   :location (vec 0 0)))
 
 (defgeneric adjust-subactor-positions (group-actor)
   (:method ((group group-actor))
