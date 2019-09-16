@@ -17,4 +17,5 @@
   3 (:group (enter actor-test-textbox :location (vec 300 300)
                                       :text "[B]"
                                       :name :text-B))
+  ;; Doesn't work -- need to figure out if actor positions are altered.
   4 4.5 (:group (set location :to (vec 250 0) :ease flare:quad-out)))
