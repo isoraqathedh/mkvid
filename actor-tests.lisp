@@ -1,4 +1,9 @@
 ;;;; actor-tests.lisp
+
+;;;; This file contains tests for each of the actor types.
+;;;; They should demonstrate how the group works
+;;;; either using the demonstration actor defined here or something similar.
+
 (in-package #:mkvid)
 (in-readtable :qtools)
 
