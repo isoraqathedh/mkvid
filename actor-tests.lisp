@@ -25,4 +25,4 @@
   ;; Doesn't work -- need to figure out if actor positions are altered.
   ;; The main issue here is that `increase' does not take vectors.
   ;; we'll have to figure out how to do it.
-  4 4.5 ((:group >) (set location :to (vec 250 100) :ease) flare:quad-out))
+  4 4.5 ((:group >) (set location :to (vec 250 100))))
