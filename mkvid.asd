@@ -15,3 +15,12 @@
                (:file "export")
                (:file "actor")
                (:file "mkvid")))
+
+(asdf:defsystem #:mkvid/additional-tests
+  :description "An system with additional tests for mkvid."
+  :author "Isoraķatheð Zorethan <isoraqathedh.zorethan@gmail.com>"
+  :license  "MIT"
+  :version "0.0.1"
+  :serial t
+  :depends-on (#:mkvid)
+  :components ((:file "actor-tests")))
