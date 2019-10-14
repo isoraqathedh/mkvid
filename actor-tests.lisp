@@ -14,13 +14,6 @@
    :size (vec 250 60)
    :background *background-colour*))
 
-(define-change-parser increase* (accessor &key from by (ease 'flare:linear)
-                                          (with #'+))
-  `(make-instance 'range-accessor-tween :ease ',ease
-                                        :from ,from
-                                        :to (funcall ,with ,from ,by)
-                                        :accessor ',accessor))
-
 (define-presentation group-actor-test (1024 576)
   1 (t (enter group-actor :name :group :location (vec 400 0)))
   2 (:group (enter actor-test-textbox :location (vec 100 100)
