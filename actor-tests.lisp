@@ -14,6 +14,9 @@
    :size (vec 250 60)
    :background *background-colour*))
 
+;; still doesn't work
+;; for some reason the range-tween instantiates a new object
+;; when the animation starts.
 (defclass range-tween* (flare:range-tween)
   ((adding-function
     :accessor adding-func
