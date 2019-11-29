@@ -12,6 +12,9 @@ that's meant to integrate with the rest of Common Lisp.
 [manim]: https://github.com/3b1b/manim
 [Vhèkkyo Boy]: https://www.facebook.com/VhekkyoBoy/
 
+# Installation
+Copy files into a place that Quicklisp can reach and `ql:quickload` it as usual.
+
 # Concept
 A video contains a number of **scenes**, with a number of **actors**
 that can move around, grow, shrink or otherwise transform.
