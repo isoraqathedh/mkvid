@@ -29,6 +29,12 @@
    :by 1
    :adding-func '+))
 
+(defmethod flare::copy ((tween range-tween*))
+  (let ((c (call-next-method)))
+    (setf (adding-func c) (adding-func tween)
+          (by c) (by tween))
+    c))
+
 (defclass range-accessor-tween* (range-tween* flare::accessor-tween) ())
 
 (defmethod flare::tween-value ((tween range-tween*) object clock step)
