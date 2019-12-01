@@ -38,11 +38,10 @@
 (defclass range-accessor-tween* (range-tween* flare::accessor-tween) ())
 
 (defmethod flare::tween-value ((tween range-tween*) object clock step)
-  (print tween)
   (let ((old-value (or (flare::from tween)
                        (flare:original-value object tween))))
     (flare:ease-object old-value
-                       (funcall (print (symbol-function (adding-func tween)))
+                       (funcall (symbol-function (adding-func tween))
                                 old-value
                                 (by tween))
                        step
@@ -51,12 +50,12 @@
 (define-change-parser vincrease (accessor &key from (by (vec 0 1))
                                           (ease 'flare:linear)
                                           (adding-func 'v+))
-  `(print (make-instance 'range-accessor-tween*
-                         :ease ',ease
-                         :from ,from
-                         :by ,by
-                         :adding-func ',adding-func
-                         :accessor ',accessor)))
+  `(make-instance 'range-accessor-tween*
+                  :ease ',ease
+                  :from ,from
+                  :by ,by
+                  :adding-func ',adding-func
+                  :accessor ',accessor))
 
 (define-presentation group-actor-test (1024 576)
   1 (t (enter group-actor :name :group :location (vec 400 0)))
