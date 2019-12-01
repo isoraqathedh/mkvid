@@ -2,11 +2,11 @@
 
 This is a project to allow one to create videos
 with moving text, images and geometrical figures.
-It is essentially a bit of a [manim][] clone, 
+It is essentially a bit of a [manim][] clone,
 but more inspired by "PowerPoint animations" à la [Vhèkkyo Boy][].
 
 Unlike other projects such as `lut` and `bocproc`,
-this is not a scripting language, but an actual library 
+this is not a scripting language, but an actual library
 that's meant to integrate with the rest of Common Lisp.
 
 [manim]: https://github.com/3b1b/manim
@@ -20,6 +20,35 @@ A video contains a number of **scenes**, with a number of **actors**
 that can move around, grow, shrink or otherwise transform.
 It is heavily built around `flare`, a particle animation library,
 and much of its features is built around it.
+
+The primary idea here is that this is a digital "puppet theatre";
+you have a bunch of props (actors)
+that you can manipulate with intuitive actions
+such as moving, growing, shrinking, moving a particular component,
+and so on and so forth.
+This creates three levels of abstraction:
+
+1. The **movie script level**, which attempts to emulate natural languages
+   as far as possible, with the possible exception of
+   the syntax (which will remain s-expression based) and
+   timing, which has to be marked explicitly.
+   A future extension might include a level above this
+   which will cover over the s-expressions in most simple cases
+   with some COBOL-style natural language constructs,
+   but this layer will _never_ be required.
+2. The **raw actions level**, which is where `mkvid` (and you, the user)
+   transform natural language actions from the movie script level
+   into something that can be concretely executed by a computer.
+   e.g., to convert "actor A hits actor B" into a series of smaller actions
+   that move actor A's arm, have it arrive at actor B,
+   and having actor B recoil in the hit.
+3. The **`flare` level**, which turns those concrete actions
+   into executable code. This is handled by `flare`.
+4. The **screen level**, where all these actions
+   are displayed and otherwise rendered.
+
+All of these levels are useful and are to be used together
+for a detailed animation.
 
 # How to make your own animation
 The first step you need to do is to invent some **actors**.
@@ -44,7 +73,7 @@ Once that's done you can create the scene.
 This scene is a `presentation` and the syntax goes like this:
 
 ```
-    (define-presentation name (width height) 
+    (define-presentation name (width height)
        ...progression-definitions...)
 
 ```
@@ -85,4 +114,3 @@ You only decide on the frame rate when it is time to export the video.
 # License
 
 MIT
-
