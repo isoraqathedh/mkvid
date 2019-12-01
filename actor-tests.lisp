@@ -43,7 +43,7 @@
                        (flare::ease-func tween))))
 
 (define-change-parser vincrease (accessor &key from (by (vec 0 1))
-                                          (ease 'linear)
+                                          (ease 'flare:linear)
                                           (adding-func 'v+))
   `(print (make-instance 'range-accessor-tween*
                          :ease ',ease
@@ -61,5 +61,5 @@
                                       :text "[B]"
                                       :name :text-B))
   4 4.5 ((:group >) (vincrease location :by (vec 250 100)
-                                        :adding-func 'v+))
+                                        :adding-func v+))
   5 (:text-A (leave)))
