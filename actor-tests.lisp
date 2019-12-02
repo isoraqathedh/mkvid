@@ -14,49 +14,6 @@
    :size (vec 250 60)
    :background *background-colour*))
 
-;; still doesn't work
-;; for some reason the range-tween instantiates a new object
-;; when the animation starts.
-(defclass range-tween* (flare:range-tween)
-  ((adding-function
-    :accessor adding-func
-    :initarg :adding-func)
-   (by
-    :accessor by
-    :initarg :by))
-  (:default-initargs
-   :to nil ; Not needed in range-tween*
-   :by 1
-   :adding-func '+))
-
-(defmethod flare::copy ((tween range-tween*))
-  (let ((c (call-next-method)))
-    (setf (adding-func c) (adding-func tween)
-          (by c) (by tween))
-    c))
-
-(defclass range-accessor-tween* (range-tween* flare::accessor-tween) ())
-
-(defmethod flare::tween-value ((tween range-tween*) object clock step)
-  (let ((old-value (or (flare::from tween)
-                       (flare:original-value object tween))))
-    (flare:ease-object old-value
-                       (funcall (symbol-function (adding-func tween))
-                                old-value
-                                (by tween))
-                       step
-                       (flare::ease-func tween))))
-
-(define-change-parser vincrease (accessor &key from (by (vec 0 1))
-                                          (ease 'flare:linear)
-                                          (adding-func 'v+))
-  `(make-instance 'range-accessor-tween*
-                  :ease ',ease
-                  :from ,from
-                  :by ,by
-                  :adding-func ',adding-func
-                  :accessor ',accessor))
-
 (define-presentation group-actor-test (1024 576)
   1 (t (enter group-actor :name :group :location (vec 400 0)))
   2 (:group (enter actor-test-textbox :location (vec 100 100)
@@ -65,6 +22,6 @@
   3 (:group (enter actor-test-textbox :location (vec 300 300)
                                       :text "[B]"
                                       :name :text-B))
-  4 4.5 ((:group >) (vincrease location :by (vec 250 100)
+  4 4.5 ((:group >) (increasef location :by (vec 250 100)
                                         :adding-func v+))
   5 (:text-A (leave)))

@@ -13,6 +13,7 @@
                (:file "window")
                (:file "behaviour")
                (:file "export")
+               (:file "extra-changes")
                (:file "actor")
                (:file "mkvid")))
 
