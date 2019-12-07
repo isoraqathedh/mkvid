@@ -15,6 +15,15 @@
                (:file "export")
                (:file "extra-changes")
                (:file "actor")
+               (:module "actors"
+                :depends-on ("actor")
+                :serial t
+                :components ((:file "group")
+                             (:file "shifter")
+                             (:file "last-this-next")
+                             (:file "image")
+                             (:file "textbox")
+                             (:file "indicator-bar")))
                (:file "mkvid")))
 
 (asdf:defsystem #:mkvid/additional-tests
