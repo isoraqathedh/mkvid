@@ -22,6 +22,11 @@
               (actor-offset in (locations group)))
       (setf (location actor) (v+ actor-offset (location group))))))
 
+(defgeneric register-subactor-positions (group-actor)
+  (:method ((group group-actor))
+    (for:for ((actor flare-queue:in-queue (objects group)))
+      (push (location actor) (locations group)))))
+
 (defmethod flare:enter :after (unit (container group-actor))
   (adjust-subactor-positions container))
 
