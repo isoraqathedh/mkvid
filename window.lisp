@@ -164,10 +164,13 @@ to allow relative measurements to take place.")
 (define-initializer (main-window final-setup -2)
   (q+:show-message (q+:status-bar main-window) "Ready."))
 
-(defun present (name)
-  (if (typep (flare:progression-definition name) 'presentation)
-      (with-main-window (w 'main-window)
-        (load-presentation name (rslot-value w 'central-widget 'stage))
-        (setf (q+:window-title w) (format nil "Presenting: ~a"
-                                          (symbol-name name))))
+(defun assert-presentation (name)
+  (or (typep (flare:progression-definition name) 'presentation)
       (error "The name ~s does not define a presentation." name)))
+
+(defun present (name)
+  (assert-presentation name)
+  (with-main-window (w 'main-window)
+    (load-presentation name (rslot-value w 'central-widget 'stage))
+    (setf (q+:window-title w) (format nil "Presenting: ~a"
+                                      (symbol-name name)))))
