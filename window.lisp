@@ -109,6 +109,32 @@
   (q+:add-widget layout controls-group-box)
   (q+:add-widget layout stage))
 
+(define-initializer (main-window final-setup -2)
+  (q+:show-message (q+:status-bar main-window) "Ready."))
+
+;;; Keybinds
+;; Currently there is no need to do anything elaborate or serious,
+;; just respond to the key presses to the canvas that correspond to some action.
+;; we'll figure something more complex later if we actually need it.
+(defparameter *step-interval* 1/30
+  "Interval for which the comma and full stop keys will jump the animation for.")
+
+(define-override (main-window key-press-event) (event)
+  (let* ((key (q+:key event))
+         (canvas (rslot-value main-window 'central-widget 'stage)))
+    (cond
+      ((eql key (q+:qt.Key_Q))
+       (q+:quit *qapplication*))
+      ((eql key (q+:qt.Key_Space))
+       (signal! main-window (play/pause)))
+      ((eql key (q+:qt.Key_Comma))
+       (signal! canvas (seek-by float) (float (- *step-interval*) 0.0)))
+      ((eql key (q+:qt.Key_Period))
+       (signal! canvas (seek-by float) (float (+ *step-interval*) 0.0)))
+      ((eql key (q+:qt.Key_R))
+       (signal! main-window (restart)))
+      (t (stop-overriding)))))
+
 ;;; Animation
 (defclass presentation (flare:progression-definition)
   ((width :initarg :width :reader width)
@@ -137,37 +163,11 @@ to allow relative measurements to take place.")
                    :width ,width
                    ,@initargs)))
 
-;;; Keybinds
-;; Currently there is no need to do anything elaborate or serious,
-;; just respond to the key presses to the canvas that correspond to some action.
-;; we'll figure something more complex later if we actually need it.
-(defparameter *step-interval* 1/30
-  "Interval for which the comma and full stop keys will jump the animation for.")
-
-(define-override (main-window key-press-event) (event)
-  (let* ((key (q+:key event))
-         (canvas (rslot-value main-window 'central-widget 'stage)))
-    (cond
-      ((eql key (q+:qt.Key_Q))
-       (q+:quit *qapplication*))
-      ((eql key (q+:qt.Key_Space))
-       (signal! main-window (play/pause)))
-      ((eql key (q+:qt.Key_Comma))
-       (signal! canvas (seek-by float) (float (- *step-interval*) 0.0)))
-      ((eql key (q+:qt.Key_Period))
-       (signal! canvas (seek-by float) (float (+ *step-interval*) 0.0)))
-      ((eql key (q+:qt.Key_R))
-       (signal! main-window (restart)))
-      (t (stop-overriding)))))
-
-;;; Main
-(define-initializer (main-window final-setup -2)
-  (q+:show-message (q+:status-bar main-window) "Ready."))
-
 (defun assert-presentation (name)
   (or (typep (flare:progression-definition name) 'presentation)
       (error "The name ~s does not define a presentation." name)))
 
+;;; Main
 (defun present (name)
   (assert-presentation name)
   (with-main-window (w 'main-window)
